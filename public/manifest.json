@@ -1,0 +1,55 @@
+{
+  "name": "Daymark — Personal Productivity Tracker",
+  "short_name": "Daymark",
+  "description": "A calm, private personal productivity tracker for daily tasks, work, recurring habits, and historical progress.",
+  "start_url": "/daily?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFFFFF",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Tasks",
+      "short_name": "Daily",
+      "description": "View and manage today's task checklist",
+      "url": "/daily",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Habits & Routines",
+      "short_name": "Habits",
+      "description": "Track recurring habits and routines",
+      "url": "/habits",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Settings & Reminders",
+      "short_name": "Settings",
+      "description": "Configure notifications and reminders",
+      "url": "/settings",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "utilities", "lifestyle"]
+}
