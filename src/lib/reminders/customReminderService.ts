@@ -1,4 +1,4 @@
-import { db, canAccessFirestore } from "@/lib/firebase/client";
+import { db, canAccessFirestore, removeUndefinedFields } from "@/lib/firebase/client";
 import {
   collection,
   doc,
@@ -101,8 +101,9 @@ export async function createCustomReminder(
   }
 
   const docRef = doc(db, "users", uid, "customReminders", newId);
+  const cleanData = removeUndefinedFields(data);
   await setDoc(docRef, {
-    ...data,
+    ...cleanData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -126,8 +127,9 @@ export async function updateCustomReminder(
   }
 
   const docRef = doc(db, "users", uid, "customReminders", reminderId);
+  const cleanUpdates = removeUndefinedFields(updates);
   await updateDoc(docRef, {
-    ...updates,
+    ...cleanUpdates,
     updatedAt: serverTimestamp(),
   });
 }

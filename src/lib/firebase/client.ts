@@ -51,4 +51,29 @@ export function canAccessFirestore(uid?: string): boolean {
   return true;
 }
 
+/**
+ * Removes undefined fields from objects before saving to Firestore,
+ * preventing 'Unsupported field value: undefined' errors.
+ */
+export function removeUndefinedFields<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      if (
+        value !== null &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        !(value instanceof Date) &&
+        typeof (value as any)?.toMillis !== "function"
+      ) {
+        cleaned[key] = removeUndefinedFields(value);
+      } else {
+        cleaned[key] = value;
+      }
+    }
+  }
+  return cleaned as Partial<T>;
+}
+
 export { app, auth, db };
+

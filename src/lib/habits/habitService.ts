@@ -1,4 +1,4 @@
-import { db, canAccessFirestore } from "@/lib/firebase/client";
+import { db, canAccessFirestore, removeUndefinedFields } from "@/lib/firebase/client";
 import {
   collection,
   doc,
@@ -70,8 +70,9 @@ export async function createTemplate(
   }
 
   const docRef = doc(db, "users", uid, "taskTemplates", newId);
+  const cleanTemplate = removeUndefinedFields(templateData);
   await setDoc(docRef, {
-    ...templateData,
+    ...cleanTemplate,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -95,8 +96,9 @@ export async function updateTemplate(
   }
 
   const docRef = doc(db, "users", uid, "taskTemplates", templateId);
+  const cleanUpdates = removeUndefinedFields(updates);
   await updateDoc(docRef, {
-    ...updates,
+    ...cleanUpdates,
     updatedAt: serverTimestamp(),
   });
 }
