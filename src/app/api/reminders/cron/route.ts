@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb, isAdminConfigured } from "@/lib/firebase/admin";
+import { adminAuth, adminDb, isAdminConfigured } from "@/lib/firebase/admin";
 import { sendPushNotificationToUser } from "@/lib/firebase/adminMessaging";
 import { getLocalDateString, getWeekdayIndex } from "@/lib/dates";
 import { ReminderSettings, TaskItem, CustomReminder } from "@/types";
@@ -15,10 +15,29 @@ export async function POST(req: NextRequest) {
 async function handleCron(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
+    const isVercelCron = req.headers.get("x-vercel-cron") === "1";
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    let targetUid: string | null = null;
+
+    // Check authorization:
+    // 1. Vercel Cron header
+    // 2. Secret Bearer token
+    // 3. Authenticated user ID token (allows client app to trigger check on schedule)
+    if (!isVercelCron) {
+      if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+        // Authorized via CRON_SECRET
+      } else if (authHeader && authHeader.startsWith("Bearer ") && adminAuth) {
+        try {
+          const idToken = authHeader.split("Bearer ")[1];
+          const decoded = await adminAuth.verifyIdToken(idToken);
+          targetUid = decoded.uid;
+        } catch {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+      } else if (cronSecret) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     if (!isAdminConfigured || !adminDb) {
@@ -28,11 +47,21 @@ async function handleCron(req: NextRequest) {
       );
     }
 
-    const usersSnap = await adminDb.collection("users").get();
+    let userDocs: FirebaseFirestore.DocumentSnapshot[] = [];
+    if (targetUid) {
+      const singleDoc = await adminDb.collection("users").doc(targetUid).get();
+      if (singleDoc.exists) {
+        userDocs = [singleDoc];
+      }
+    } else {
+      const usersSnap = await adminDb.collection("users").get();
+      userDocs = usersSnap.docs;
+    }
+
     let processedUsers = 0;
     let pushNotificationsSent = 0;
 
-    for (const userDoc of usersSnap.docs) {
+    for (const userDoc of userDocs) {
       const uid = userDoc.id;
 
       // 1. Fetch user's reminder settings
@@ -50,6 +79,10 @@ async function handleCron(req: NextRequest) {
         quietHours: { enabled: true, start: "22:00", end: "07:00" },
       };
 
+      if (settings.pushEnabled === false) {
+        continue;
+      }
+
       const timeZone = settings.timeZone || "Asia/Kolkata";
       const localDate = getLocalDateString(timeZone);
 
@@ -63,6 +96,7 @@ async function handleCron(req: NextRequest) {
       }).format(now);
 
       const [currentHour, currentMin] = localTimeStr.split(":").map(Number);
+      const currentTotalMins = currentHour * 60 + currentMin;
       const currentWeekday = getWeekdayIndex(localDate);
 
       // Check Quiet Hours
@@ -102,37 +136,31 @@ async function handleCron(req: NextRequest) {
 
       for (const remDoc of customRemindersSnap.docs) {
         const reminder = { id: remDoc.id, ...remDoc.data() } as CustomReminder;
+        const [remHour, remMin = 0] = (reminder.reminderTime || "08:00").split(":").map(Number);
+        const remTotalMins = remHour * 60 + remMin;
+        const diffMins = currentTotalMins - remTotalMins;
 
         let shouldTrigger = false;
-        let slotIdentifier = `${currentHour}:00`;
+        const formattedSlot = `${remHour.toString().padStart(2, "0")}:${remMin.toString().padStart(2, "0")}`;
 
-        if (reminder.repeatType === "daily") {
-          const [remHour] = reminder.reminderTime.split(":").map(Number);
-          if (remHour === currentHour) {
+        if (reminder.repeatType === "daily" || reminder.repeatType === "once") {
+          // Trigger if current time has reached the reminder time and is within last 30 minutes
+          if (diffMins >= 0 && diffMins <= 30) {
             shouldTrigger = true;
           }
         } else if (reminder.repeatType === "selected-weekdays") {
-          const [remHour] = reminder.reminderTime.split(":").map(Number);
-          if (
-            remHour === currentHour &&
-            reminder.weekdays &&
-            reminder.weekdays.includes(currentWeekday)
-          ) {
-            shouldTrigger = true;
+          if (reminder.weekdays?.includes(currentWeekday)) {
+            if (diffMins >= 0 && diffMins <= 30) {
+              shouldTrigger = true;
+            }
           }
         } else if (reminder.repeatType === "interval") {
           // Interval reminder (e.g. water every 2 hours between 08:00 and 22:00)
           if (currentHour >= 8 && currentHour <= 22) {
             const intervalHours = Math.max(1, Math.round((reminder.intervalMinutes || 120) / 60));
-            if (currentHour % intervalHours === 0) {
+            if (currentHour % intervalHours === 0 && currentMin <= 20) {
               shouldTrigger = true;
-              slotIdentifier = `interval_${currentHour}h`;
             }
-          }
-        } else if (reminder.repeatType === "once") {
-          const [remHour] = reminder.reminderTime.split(":").map(Number);
-          if (remHour === currentHour) {
-            shouldTrigger = true;
           }
         }
 
@@ -147,13 +175,13 @@ async function handleCron(req: NextRequest) {
             .doc(reminder.linkedTaskId)
             .get();
 
-          if (!taskDoc.exists) continue; // Task deleted
+          if (!taskDoc.exists) continue;
           const taskData = taskDoc.data() as TaskItem;
-          if (taskData.status !== "todo") continue; // Task completed or cancelled
+          if (taskData.status !== "todo") continue;
         }
 
-        // Check Idempotency for this reminder slot
-        const eventId = `rem_push_${uid}_${reminder.id}_${localDate}_${slotIdentifier}`;
+        // Idempotency check: strictly one push per scheduled time per day
+        const eventId = `rem_push_${uid}_${reminder.id}_${localDate}_${formattedSlot.replace(":", "h")}`;
         const eventRef = adminDb
           .collection("users")
           .doc(uid)
@@ -162,23 +190,25 @@ async function handleCron(req: NextRequest) {
 
         const existingEvent = await eventRef.get();
         if (existingEvent.exists && existingEvent.data()?.status === "sent") {
-          continue; // Already sent for this slot
+          continue; // Already successfully delivered for this day and time
         }
 
-        // Send Push Notification
+        // Dispatch FCM Push Notification
         const pushResult = await sendPushNotificationToUser(uid, {
           title: reminder.title,
-          body: reminder.description || `It's ${reminder.reminderTime} — time for your scheduled reminder!`,
+          body:
+            reminder.description ||
+            `It's ${reminder.reminderTime} — time for your scheduled reminder!`,
           category: reminder.category,
           url: "/daily",
           tag: `custom-${reminder.id}-${localDate}`,
         });
 
-        // Record event to prevent duplicates
+        // Record event
         await eventRef.set({
           idempotencyKey: eventId,
           scheduledForLocalDate: localDate,
-          scheduledSlot: slotIdentifier,
+          scheduledSlot: formattedSlot,
           type: "custom-reminder",
           reminderId: reminder.id,
           status: pushResult.success ? "sent" : "failed",
@@ -209,9 +239,14 @@ async function handleCron(req: NextRequest) {
         const task = tDoc.data() as TaskItem;
         if (!task.dueTime) continue;
 
-        const [taskHour] = task.dueTime.split(":").map(Number);
-        if (taskHour === currentHour) {
-          const taskEventId = `rem_push_task_${uid}_${task.id}_${localDate}_${taskHour}h`;
+        const [taskHour, taskMin = 0] = task.dueTime.split(":").map(Number);
+        const taskTotalMins = taskHour * 60 + taskMin;
+        const diffMins = currentTotalMins - taskTotalMins;
+
+        // Due if current time is at or within 30 minutes of due time
+        if (diffMins >= 0 && diffMins <= 30) {
+          const taskFormattedSlot = `${taskHour.toString().padStart(2, "0")}:${taskMin.toString().padStart(2, "0")}`;
+          const taskEventId = `rem_push_task_${uid}_${task.id}_${localDate}_${taskFormattedSlot.replace(":", "h")}`;
           const taskEventRef = adminDb
             .collection("users")
             .doc(uid)
@@ -225,7 +260,9 @@ async function handleCron(req: NextRequest) {
 
           const pushResult = await sendPushNotificationToUser(uid, {
             title: `Task Reminder: ${task.title}`,
-            body: task.description ? `${task.description} (Due at ${task.dueTime})` : `Scheduled for ${task.dueTime}`,
+            body: task.description
+              ? `${task.description} (Due at ${task.dueTime})`
+              : `Scheduled for ${task.dueTime}`,
             category: "task",
             url: "/daily",
             tag: `task-${task.id}-${localDate}`,
@@ -234,7 +271,7 @@ async function handleCron(req: NextRequest) {
           await taskEventRef.set({
             idempotencyKey: taskEventId,
             scheduledForLocalDate: localDate,
-            scheduledSlot: `${taskHour}:00`,
+            scheduledSlot: taskFormattedSlot,
             type: "task-due-reminder",
             taskId: task.id,
             status: pushResult.success ? "sent" : "failed",

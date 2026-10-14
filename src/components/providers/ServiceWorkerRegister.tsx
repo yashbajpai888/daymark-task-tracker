@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { subscribeForegroundMessages } from "@/lib/firebase/messaging";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { Bell, X, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
@@ -13,6 +14,7 @@ interface ForegroundToast {
 }
 
 export const ServiceWorkerRegister: React.FC = () => {
+  const { user, getIdToken } = useAuth();
   const [toast, setToast] = useState<ForegroundToast | null>(null);
 
   useEffect(() => {
@@ -55,6 +57,34 @@ export const ServiceWorkerRegister: React.FC = () => {
       unsubscribe();
     };
   }, []);
+
+  // Active reminder scheduler heartbeat: Checks scheduled reminders every 30 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    const checkReminders = async () => {
+      try {
+        const idToken = await getIdToken();
+        if (idToken) {
+          await fetch("/api/reminders/cron", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+          });
+        }
+      } catch {
+        // Silent background check
+      }
+    };
+
+    // Run check immediately on mount and then every 30s
+    checkReminders();
+    const interval = setInterval(checkReminders, 30000);
+
+    return () => clearInterval(interval);
+  }, [user, getIdToken]);
 
   // Auto-dismiss foreground toast after 6 seconds
   useEffect(() => {
