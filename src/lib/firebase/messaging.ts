@@ -126,20 +126,47 @@ export async function getClientMessaging(): Promise<Messaging | null> {
 }
 
 export async function requestAndRegisterPushToken(
-  idToken?: string | null
+  tokenOrFn?: string | null | (() => Promise<string | null>)
 ): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
-    const support = await checkPushSupport();
-    if (!support.supported) {
-      return { success: false, error: support.reason || "Push notifications unsupported." };
+    if (typeof window === "undefined") {
+      return { success: false, error: "Server-side environment." };
     }
 
-    // Explicitly request permission
-    const permission = await Notification.requestPermission();
+    const isIOS = detectDevicePlatform() === "ios";
+    const isStandalone = isStandaloneMode();
+
+    if (!("Notification" in window)) {
+      if (isIOS && !isStandalone) {
+        return {
+          success: false,
+          error:
+            "On iPhone, please tap Share -> 'Add to Home Screen', then launch Daymark from your Home Screen to enable notifications.",
+        };
+      }
+      return {
+        success: false,
+        error: "Notification API is not available on this device/browser.",
+      };
+    }
+
+    // Call Notification.requestPermission() immediately synchronously on user click!
+    // iOS Safari strictly requires this without prior awaits, or it ignores the gesture.
+    let permission: NotificationPermission;
+    try {
+      permission = await Notification.requestPermission();
+    } catch {
+      // Fallback for older WebKit callback style
+      permission = await new Promise<NotificationPermission>((resolve) => {
+        Notification.requestPermission((p) => resolve(p));
+      });
+    }
+
     if (permission !== "granted") {
       return {
         success: false,
-        error: "Notification permission was denied or dismissed. Please allow notifications in your browser settings.",
+        error:
+          "Notification permission was denied. Please go to iPhone Settings > Notifications > Daymark and turn on 'Allow Notifications'.",
       };
     }
 
@@ -164,6 +191,9 @@ export async function requestAndRegisterPushToken(
     if (!currentToken) {
       return { success: false, error: "Unable to retrieve FCM registration token." };
     }
+
+    // Resolve auth token now that permission has been granted
+    const idToken = typeof tokenOrFn === "function" ? await tokenOrFn() : tokenOrFn;
 
     // Save token to backend API
     const platform = detectDevicePlatform();

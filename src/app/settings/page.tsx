@@ -135,8 +135,9 @@ export default function SettingsPage() {
     setPushEnabling(true);
     setPushResult(null);
     try {
-      const token = await getIdToken();
-      const res = await requestAndRegisterPushToken(token);
+      // Pass getIdToken directly so Notification.requestPermission() is called
+      // on the very first synchronous tick of user tap (required by iOS Safari!)
+      const res = await requestAndRegisterPushToken(getIdToken);
       if (res.success) {
         setSettings((prev) => ({ ...prev, pushEnabled: true }));
         await saveReminderSettings(uid, { ...settings, pushEnabled: true });
