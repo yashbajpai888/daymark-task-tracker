@@ -42,6 +42,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+export const instant = false;
+
 export default function RootLayout({
   children,
 }: Readonly<{
