@@ -33,9 +33,6 @@ import {
   Bell,
   BellRing,
   Clock,
-  Download,
-  KeyRound,
-  ShieldCheck,
   CheckCircle2,
   AlertCircle,
   HelpCircle,
@@ -241,46 +238,6 @@ export default function SettingsPage() {
       timeZone: settings.timeZone,
     });
     setCustomReminders((prev) => [...prev, newRem]);
-  };
-
-  const handleExportData = async () => {
-    try {
-      const token = await getIdToken();
-      if (!token) {
-        const localTasks = localStorage.getItem("daymark_local_tasks");
-        const localTemplates = localStorage.getItem("daymark_local_templates");
-        const exportObj = {
-          exportedAt: new Date().toISOString(),
-          tasks: localTasks ? JSON.parse(localTasks) : [],
-          templates: localTemplates ? JSON.parse(localTemplates) : [],
-          customReminders,
-          categories,
-        };
-        const blob = new Blob([JSON.stringify(exportObj, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `daymark-export-${Date.now()}.json`;
-        a.click();
-        return;
-      }
-
-      const res = await fetch("/api/export", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `daymark-export-${Date.now()}.json`;
-        a.click();
-      }
-    } catch (err) {
-      console.error("Export failed:", err);
-    }
   };
 
   const renderCategoryIcon = (cat: string) => {
@@ -741,65 +698,6 @@ export default function SettingsPage() {
             </Button>
           </div>
         </form>
-
-        {/* 4. Credentials Checklist */}
-        <div className="p-5 rounded-xl border border-border bg-surface space-y-4">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-border">
-            <KeyRound className="w-5 h-5 text-accent" />
-            <h3 className="text-base font-semibold text-text-primary">
-              Firebase &amp; Web Push Credentials Checklist
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="p-3.5 rounded-lg border border-border bg-surface-elevated/40 space-y-2">
-              <span className="font-semibold text-text-primary block flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-blue-600" />
-                1. Firebase Client &amp; Web Push (FCM)
-              </span>
-              <ul className="text-text-secondary space-y-1 list-disc list-inside">
-                <li><code className="text-text-primary">NEXT_PUBLIC_FIREBASE_API_KEY</code></li>
-                <li><code className="text-text-primary">NEXT_PUBLIC_FIREBASE_PROJECT_ID</code></li>
-                <li><code className="text-text-primary">NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID</code></li>
-                <li><code className="text-text-primary">NEXT_PUBLIC_FIREBASE_VAPID_KEY</code> (Web Push Certificate)</li>
-              </ul>
-              <span className="text-[11px] text-text-secondary block pt-1">
-                Generate VAPID Key in Firebase Console &gt; Project Settings &gt; Cloud Messaging &gt; Web configuration.
-              </span>
-            </div>
-
-            <div className="p-3.5 rounded-lg border border-border bg-surface-elevated/40 space-y-2">
-              <span className="font-semibold text-text-primary block flex items-center gap-1.5">
-                <BellRing className="w-4 h-4 text-blue-600" />
-                2. Server-Side Push Dispatch
-              </span>
-              <ul className="text-text-secondary space-y-1 list-disc list-inside">
-                <li><code className="text-text-primary">FIREBASE_PROJECT_ID</code></li>
-                <li><code className="text-text-primary">FIREBASE_CLIENT_EMAIL</code></li>
-                <li><code className="text-text-primary">FIREBASE_PRIVATE_KEY</code></li>
-                <li><code className="text-text-primary">CRON_SECRET</code> (for /api/reminders/cron)</li>
-              </ul>
-              <span className="text-[11px] text-text-secondary block pt-1">
-                Used securely on the server to send push notifications via Firebase Admin SDK.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. Data Privacy & Export */}
-        <div className="p-5 rounded-xl border border-border bg-surface flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h3 className="text-base font-semibold text-text-primary">Export Application Data</h3>
-            <p className="text-xs text-text-secondary mt-0.5">
-              Download your complete task history, habit templates, custom reminders, and workspace categories as JSON.
-            </p>
-          </div>
-
-          <Button variant="secondary" size="md" onClick={handleExportData}>
-            <Download className="w-4 h-4 mr-1.5" />
-            <span>Export JSON</span>
-          </Button>
-        </div>
       </div>
 
       {/* Custom Reminder Modal */}
