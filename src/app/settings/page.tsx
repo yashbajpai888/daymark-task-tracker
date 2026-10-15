@@ -7,19 +7,13 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { FeedbackBanner } from "@/components/ui/FeedbackBanner";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { ReminderSettings, Category, CustomReminder, NotificationHistoryItem } from "@/types";
+import { ReminderSettings, Category, NotificationHistoryItem } from "@/types";
 import {
   getReminderSettings,
   saveReminderSettings,
 } from "@/lib/reminders/reminderService";
 import {
-  getCustomReminders,
-  createCustomReminder,
-  updateCustomReminder,
-  deleteCustomReminder,
   getNotificationHistory,
-  clearNotificationHistory,
-  PRESET_REMINDERS,
 } from "@/lib/reminders/customReminderService";
 import {
   checkPushSupport,
@@ -27,7 +21,6 @@ import {
   PushSupportInfo,
 } from "@/lib/firebase/messaging";
 import { getCategories } from "@/lib/categories/categoryService";
-import { CustomReminderModal } from "@/components/notifications/CustomReminderModal";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import {
   Bell,
@@ -36,12 +29,6 @@ import {
   CheckCircle2,
   AlertCircle,
   HelpCircle,
-  Plus,
-  Dumbbell,
-  Footprints,
-  Droplet,
-  Trash2,
-  Edit2,
   Smartphone,
   Share2,
   Volume2,
@@ -53,7 +40,7 @@ export default function SettingsPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [settings, setSettings] = useState<ReminderSettings>({
-    enabled: false, // Email reminders disabled by default
+    enabled: false,
     pushEnabled: false,
     destinationEmail: profile?.email || "",
     emailVerified: false,
@@ -71,7 +58,6 @@ export default function SettingsPage() {
     soundEnabled: true,
   });
 
-  const [customReminders, setCustomReminders] = useState<CustomReminder[]>([]);
   const [notificationHistory, setNotificationHistory] = useState<NotificationHistoryItem[]>([]);
   const [pushSupport, setPushSupport] = useState<PushSupportInfo | null>(null);
 
@@ -85,18 +71,14 @@ export default function SettingsPage() {
     error?: string;
   } | null>(null);
 
-  // Modals
-  const [reminderModalOpen, setReminderModalOpen] = useState(false);
-  const [editingReminder, setEditingReminder] = useState<CustomReminder | null>(null);
   const [notificationCenterOpen, setNotificationCenterOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
   useEffect(() => {
     async function load() {
-      const [cats, remSettings, customRems, history, support] = await Promise.all([
+      const [cats, remSettings, history, support] = await Promise.all([
         getCategories(uid),
         getReminderSettings(uid),
-        getCustomReminders(uid),
         getNotificationHistory(uid, 5),
         checkPushSupport(),
       ]);
@@ -105,7 +87,6 @@ export default function SettingsPage() {
       if (remSettings) {
         setSettings(remSettings);
       }
-      setCustomReminders(customRems);
       setNotificationHistory(history);
       setUnreadNotifCount(history.filter((h) => !h.read).length);
       setPushSupport(support);
@@ -132,8 +113,6 @@ export default function SettingsPage() {
     setPushEnabling(true);
     setPushResult(null);
     try {
-      // Pass getIdToken directly so Notification.requestPermission() is called
-      // on the very first synchronous tick of user tap (required by iOS Safari!)
       const res = await requestAndRegisterPushToken(getIdToken);
       if (res.success) {
         setSettings((prev) => ({ ...prev, pushEnabled: true }));
@@ -142,7 +121,7 @@ export default function SettingsPage() {
         setPushSupport(updatedSupport);
         setPushResult({
           success: true,
-          message: "Push notifications enabled! Your device is registered to receive scheduled reminders.",
+          message: "Push notifications enabled! This device is registered to receive alerts.",
         });
       } else {
         setPushResult({
@@ -166,7 +145,7 @@ export default function SettingsPage() {
       if (!token) {
         setPushResult({
           success: false,
-          error: "You must be signed in with Firebase to send a live test notification to your device.",
+          error: "You must be signed in with Firebase to send a live test notification.",
         });
         return;
       }
@@ -179,7 +158,7 @@ export default function SettingsPage() {
         },
         body: JSON.stringify({
           title: "Daymark — Test Push Notification",
-          body: "Your Web Push notifications and custom reminder delivery are fully operational!",
+          body: "Push notification system is working! You will receive scheduled task alerts.",
         }),
       });
 
@@ -189,7 +168,6 @@ export default function SettingsPage() {
           success: true,
           message: data.message || "Test push notification successfully sent to your device!",
         });
-        // Refresh notification history
         const updatedHistory = await getNotificationHistory(uid, 5);
         setNotificationHistory(updatedHistory);
       } else {
@@ -206,62 +184,15 @@ export default function SettingsPage() {
     }
   };
 
-  const handleCreateOrUpdateReminder = async (
-    data: Omit<CustomReminder, "id" | "createdAt" | "updatedAt">
-  ) => {
-    if (editingReminder) {
-      await updateCustomReminder(uid, editingReminder.id, data);
-      setCustomReminders((prev) =>
-        prev.map((r) => (r.id === editingReminder.id ? { ...r, ...data, updatedAt: Date.now() } : r))
-      );
-    } else {
-      const newReminder = await createCustomReminder(uid, data);
-      setCustomReminders((prev) => [...prev, newReminder]);
-    }
-  };
-
-  const handleToggleReminder = async (id: string, enabled: boolean) => {
-    await updateCustomReminder(uid, id, { enabled });
-    setCustomReminders((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, enabled } : r))
-    );
-  };
-
-  const handleDeleteReminder = async (id: string) => {
-    await deleteCustomReminder(uid, id);
-    setCustomReminders((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const handleAddPreset = async (preset: (typeof PRESET_REMINDERS)[0]) => {
-    const newRem = await createCustomReminder(uid, {
-      ...preset,
-      timeZone: settings.timeZone,
-    });
-    setCustomReminders((prev) => [...prev, newRem]);
-  };
-
-  const renderCategoryIcon = (cat: string) => {
-    switch (cat) {
-      case "gym":
-        return <Dumbbell className="w-4 h-4 text-orange-500" />;
-      case "running":
-        return <Footprints className="w-4 h-4 text-emerald-500" />;
-      case "water":
-        return <Droplet className="w-4 h-4 text-blue-500" />;
-      default:
-        return <Clock className="w-4 h-4 text-blue-600" />;
-    }
-  };
-
   return (
     <AppShell categories={categories}>
       <PageHeader
-        title="Settings & Reminders"
-        subtitle="Manage Web Push notifications, custom habit schedules, time zone, and security."
+        title="Settings & Notifications"
+        subtitle="Manage push notification permissions, time zone, and quiet hours."
       />
 
-      <div className="space-y-8 max-w-4xl">
-        {/* 1. Web Push Notification Configuration Card */}
+      <div className="space-y-6 max-w-3xl">
+        {/* 1. Web Push Notification Status Card */}
         <div className="p-5 rounded-xl border border-border bg-surface space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2.5">
@@ -270,10 +201,10 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="text-base font-semibold text-text-primary">
-                  Web Push Notifications
+                  Push Notifications
                 </h3>
                 <p className="text-xs text-text-secondary">
-                  Receive scheduled notifications on mobile and desktop even when the website is closed.
+                  Receive task reminders on your phone or laptop at scheduled times.
                 </p>
               </div>
             </div>
@@ -283,7 +214,7 @@ export default function SettingsPage() {
               {pushSupport?.permission === "granted" ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Permission Granted</span>
+                  <span>Enabled on this Device</span>
                 </span>
               ) : pushSupport?.permission === "denied" ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
@@ -304,11 +235,11 @@ export default function SettingsPage() {
             <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/70 flex items-start gap-3 text-xs text-blue-900">
               <Smartphone className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <span className="font-semibold block">iOS / iPadOS Web Push Setup:</span>
+                <span className="font-semibold block">iOS Setup Required:</span>
                 <p className="leading-relaxed">
-                  Apple requires Web Push apps to run as an installed Home Screen app. Tap the Safari{" "}
+                  Apple requires Web Push apps to run from your Home Screen. Tap Safari&apos;s{" "}
                   <Share2 className="w-3.5 h-3.5 inline mx-0.5 text-blue-700" /> <strong>Share</strong> button, select{" "}
-                  <strong>&apos;Add to Home Screen&apos;</strong>, and then open Daymark from your Home Screen to enable push notifications.
+                  <strong>&apos;Add to Home Screen&apos;</strong>, then open Daymark from your Home Screen.
                 </p>
               </div>
             </div>
@@ -318,11 +249,11 @@ export default function SettingsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <div className="space-y-1">
               <span className="text-xs font-semibold text-text-primary block">
-                Notification Delivery Status
+                Notification Delivery
               </span>
               <p className="text-xs text-text-secondary">
                 {settings.pushEnabled
-                  ? "Scheduled reminders will be delivered to registered devices."
+                  ? "Reminders set on your tasks will ring on registered devices."
                   : "Push notifications are currently disabled."}
               </p>
             </div>
@@ -336,7 +267,7 @@ export default function SettingsPage() {
               >
                 <Bell className="w-4 h-4 mr-1.5" />
                 <span>
-                  {pushSupport?.permission === "granted" ? "Re-sync Token" : "Enable Push Notifications"}
+                  {pushSupport?.permission === "granted" ? "Re-sync Device" : "Enable Push Notifications"}
                 </span>
               </Button>
 
@@ -353,7 +284,7 @@ export default function SettingsPage() {
                 }
               >
                 <BellRing className="w-4 h-4 mr-1.5 text-blue-600" />
-                <span>Test Push</span>
+                <span>Test Notification</span>
               </Button>
 
               <Button
@@ -370,25 +301,25 @@ export default function SettingsPage() {
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2 text-xs">
             <span className="font-semibold text-slate-900 block flex items-center gap-1.5">
               <HelpCircle className="w-4 h-4 text-blue-600" />
-              OS Notification Permissions Checklist
+              Device Permission Tips
             </span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 pt-1">
               <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
                 <span className="font-semibold text-slate-800 block">💻 Laptop (Windows / Mac)</span>
                 <p className="text-[11px] leading-relaxed">
-                  Ensure Windows <strong>Focus Assist</strong> or Mac <strong>Do Not Disturb</strong> is off, and notifications are allowed for Chrome/Edge in Windows Settings &gt; System &gt; Notifications.
+                  Make sure Windows <strong>Focus Assist</strong> or Mac <strong>Do Not Disturb</strong> is turned off so banners pop up.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
                 <span className="font-semibold text-slate-800 block">🤖 Android</span>
                 <p className="text-[11px] leading-relaxed">
-                  Go to Android <strong>Settings &gt; Apps &gt; Chrome &gt; Notifications</strong> and ensure &apos;All Chrome notifications&apos; is switched on with sound enabled.
+                  Go to <strong>Settings &gt; Apps &gt; Chrome &gt; Notifications</strong> and ensure Chrome notifications are allowed.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
-                <span className="font-semibold text-slate-800 block">📱 iPhone (iOS 16.4+)</span>
+                <span className="font-semibold text-slate-800 block">📱 iPhone</span>
                 <p className="text-[11px] leading-relaxed">
-                  Daymark must be launched from your Home Screen. Check iPhone <strong>Settings &gt; Notifications &gt; Daymark</strong> to ensure &apos;Allow Notifications&apos; is active.
+                  Launch Daymark from Home Screen. Check <strong>Settings &gt; Notifications &gt; Daymark</strong> to ensure alerts are active.
                 </p>
               </div>
             </div>
@@ -397,197 +328,14 @@ export default function SettingsPage() {
           {pushResult && (
             <FeedbackBanner
               type={pushResult.success ? "success" : "error"}
-              title={pushResult.success ? "Push Notification Active" : "Notification Error"}
+              title={pushResult.success ? "Notification Active" : "Notification Error"}
               message={pushResult.message || pushResult.error || ""}
               onDismiss={() => setPushResult(null)}
             />
           )}
         </div>
 
-        {/* 2. Custom Reminders & Habits Management Card */}
-        <div className="p-5 rounded-xl border border-border bg-surface space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-orange-50 text-orange-600">
-                <Dumbbell className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-text-primary">
-                  Custom Reminders &amp; Daily Routines
-                </h3>
-                <p className="text-xs text-text-secondary">
-                  Configure specific reminders for workouts, running, water hydration, or daily focus goals.
-                </p>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={() => {
-                setEditingReminder(null);
-                setReminderModalOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              <span>Add Reminder</span>
-            </Button>
-          </div>
-
-          {/* Quick Preset Cards */}
-          <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider block">
-              One-Click Habit Presets
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl border border-border bg-surface-elevated/40 flex flex-col justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
-                    <Dumbbell className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-text-primary">Gym Workout</h4>
-                    <span className="text-[11px] text-text-secondary">Daily at 07:00 AM</span>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddPreset(PRESET_REMINDERS[0])}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  <span>Add Gym</span>
-                </Button>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-border bg-surface-elevated/40 flex flex-col justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600">
-                    <Footprints className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-text-primary">Morning Run</h4>
-                    <span className="text-[11px] text-text-secondary">Daily at 06:30 AM</span>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddPreset(PRESET_REMINDERS[1])}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  <span>Add Run</span>
-                </Button>
-              </div>
-
-              <div className="p-3.5 rounded-xl border border-border bg-surface-elevated/40 flex flex-col justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                    <Droplet className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-text-primary">Hydration Intake</h4>
-                    <span className="text-[11px] text-text-secondary">Every 2 Hours</span>
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => handleAddPreset(PRESET_REMINDERS[2])}
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  <span>Add Water</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Custom Reminders List */}
-          <div className="space-y-2 pt-2">
-            <span className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider block">
-              Configured Reminders ({customReminders.length})
-            </span>
-
-            {customReminders.length === 0 ? (
-              <div className="text-center py-8 px-4 rounded-xl border border-dashed border-border bg-surface-elevated/20 text-xs text-text-secondary">
-                No custom reminders created yet. Use the presets above or click &quot;Add Reminder&quot; to schedule notifications.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {customReminders.map((rem) => (
-                  <div
-                    key={rem.id}
-                    className="p-3.5 rounded-xl border border-border bg-surface flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-lg bg-surface-elevated shrink-0">
-                        {renderCategoryIcon(rem.category)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-text-primary truncate">
-                            {rem.title}
-                          </span>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface-elevated text-text-secondary border border-border shrink-0">
-                            {rem.repeatType === "interval"
-                              ? `Every ${Math.round((rem.intervalMinutes || 120) / 60)}h`
-                              : rem.reminderTime}
-                          </span>
-                        </div>
-                        {rem.description && (
-                          <p className="text-[11px] text-text-secondary truncate mt-0.5">
-                            {rem.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-text-secondary">
-                        <input
-                          type="checkbox"
-                          checked={rem.enabled}
-                          onChange={(e) => handleToggleReminder(rem.id, e.target.checked)}
-                          className="w-4 h-4 accent-blue-600 rounded"
-                        />
-                        <span className="hidden sm:inline">
-                          {rem.enabled ? "Active" : "Paused"}
-                        </span>
-                      </label>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingReminder(rem);
-                          setReminderModalOpen(true);
-                        }}
-                        className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
-                        title="Edit Reminder"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteReminder(rem.id)}
-                        className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
-                        title="Delete Reminder"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 3. General Reminder Preferences (Timezone, Quiet Hours) */}
+        {/* 2. Timezone & Quiet Hours */}
         <form onSubmit={handleSavePreferences} className="p-5 rounded-xl border border-border bg-surface space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2.5">
@@ -596,10 +344,6 @@ export default function SettingsPage() {
                 Timezone &amp; Quiet Hours
               </h3>
             </div>
-
-            <span className="text-[11px] font-mono font-medium text-text-secondary bg-surface-elevated px-2 py-0.5 rounded">
-              Email Reminders Disabled by Default
-            </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -625,7 +369,7 @@ export default function SettingsPage() {
                   className="w-4 h-4 accent-blue-600 rounded"
                 />
                 <Volume2 className="w-4 h-4 text-blue-600" />
-                <span>Play sound and vibration on push delivery</span>
+                <span>Play sound and vibration on alert</span>
               </label>
             </div>
           </div>
@@ -688,7 +432,7 @@ export default function SettingsPage() {
           {saveSuccess && (
             <FeedbackBanner
               type="success"
-              message="Reminder preferences saved successfully."
+              message="Settings saved successfully."
             />
           )}
 
@@ -699,18 +443,6 @@ export default function SettingsPage() {
           </div>
         </form>
       </div>
-
-      {/* Custom Reminder Modal */}
-      <CustomReminderModal
-        open={reminderModalOpen}
-        onClose={() => {
-          setReminderModalOpen(false);
-          setEditingReminder(null);
-        }}
-        onSubmit={handleCreateOrUpdateReminder}
-        initialReminder={editingReminder}
-        timeZone={settings.timeZone}
-      />
 
       {/* In-app Notification Center Drawer */}
       <NotificationCenter

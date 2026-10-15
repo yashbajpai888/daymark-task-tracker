@@ -28,6 +28,8 @@ export interface TaskItem {
   sourceTaskId?: string;
   carriedFromDate?: string;
   dueTime?: string; // HH:mm local time
+  reminderEnabled?: boolean;
+  reminderOffsetMinutes?: number;
   target?: TaskTarget;
   subtasks?: Subtask[];
   createdAt: number | string; // Unix timestamp ms or ISO string

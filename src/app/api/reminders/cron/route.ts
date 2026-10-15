@@ -242,9 +242,10 @@ async function handleCron(req: NextRequest) {
 
         const [taskHour, taskMin = 0] = task.dueTime.split(":").map(Number);
         const taskTotalMins = taskHour * 60 + taskMin;
-        const diffMins = currentTotalMins - taskTotalMins;
+        const targetAlertMins = taskTotalMins - (task.reminderOffsetMinutes || 0);
+        const diffMins = currentTotalMins - targetAlertMins;
 
-        // Due if current time is at or within 30 minutes of due time
+        // Due if current time is at or within 30 minutes of scheduled alert time
         if (diffMins >= 0 && diffMins <= 30) {
           const taskFormattedSlot = `${taskHour.toString().padStart(2, "0")}:${taskMin.toString().padStart(2, "0")}`;
           const taskEventId = `rem_push_task_${uid}_${task.id}_${localDate}_${taskFormattedSlot.replace(":", "h")}`;

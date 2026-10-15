@@ -11,6 +11,8 @@ export const taskSchema = z.object({
   projectId: z.string().optional(),
   templateId: z.string().optional(),
   dueTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format (HH:mm)").optional().or(z.literal("")),
+  reminderEnabled: z.boolean().optional(),
+  reminderOffsetMinutes: z.number().int().min(0).max(120).optional(),
   target: z
     .object({
       value: z.number().positive(),

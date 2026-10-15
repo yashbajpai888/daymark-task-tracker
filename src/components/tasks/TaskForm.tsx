@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { TaskItem, Category, Priority, Subtask } from "@/types";
 import { taskSchema } from "@/lib/validation/schemas";
-import { Plus, Trash2 } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { checkPushSupport, requestAndRegisterPushToken } from "@/lib/firebase/messaging";
+import { Plus, Trash2, Bell, BellRing, CheckCircle2, Clock } from "lucide-react";
 
 interface TaskFormProps {
   open: boolean;
@@ -25,6 +27,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   defaultDate,
   categories,
 }) => {
+  const { getIdToken } = useAuth();
+
   const [title, setTitle] = useState(() => initialTask?.title || "");
   const [description, setDescription] = useState(() => initialTask?.description || "");
   const [date, setDate] = useState(() => initialTask?.date || defaultDate);
@@ -32,7 +36,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   const [categoryId, setCategoryId] = useState<string>(
     () => initialTask?.categoryId || categories[0]?.id || categories[0]?.slug || ""
   );
+
+  // Reminder and due time state
   const [dueTime, setDueTime] = useState(() => initialTask?.dueTime || "");
+  const [reminderEnabled, setReminderEnabled] = useState(
+    () => Boolean(initialTask?.reminderEnabled || initialTask?.dueTime)
+  );
+  const [reminderOffsetMinutes, setReminderOffsetMinutes] = useState<number>(
+    () => initialTask?.reminderOffsetMinutes || 0
+  );
+  const [permissionState, setPermissionState] = useState<NotificationPermission | "unsupported">("default");
+  const [enablingNotifications, setEnablingNotifications] = useState(false);
+
   const [hasTarget, setHasTarget] = useState(() => Boolean(initialTask?.target));
   const [targetValue, setTargetValue] = useState<number>(
     () => initialTask?.target?.value || 1
@@ -47,6 +62,38 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      checkPushSupport().then((info) => {
+        setPermissionState(info.permission);
+      });
+    }
+  }, [open]);
+
+  const handleEnableNotificationsInline = async () => {
+    setEnablingNotifications(true);
+    try {
+      const res = await requestAndRegisterPushToken(getIdToken);
+      if (res.success) {
+        setPermissionState("granted");
+      } else {
+        setError(res.error || "Please allow notifications in your browser settings.");
+      }
+    } catch {
+      setError("Failed to register notification permissions.");
+    } finally {
+      setEnablingNotifications(false);
+    }
+  };
+
+  const handleToggleReminder = async (checked: boolean) => {
+    setReminderEnabled(checked);
+    if (checked && permissionState !== "granted") {
+      // Prompt synchronously on this click
+      await handleEnableNotificationsInline();
+    }
+  };
 
   const handleAddSubtask = () => {
     if (!newSubtaskTitle.trim()) return;
@@ -78,6 +125,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       priority,
       categoryId: categoryId || undefined,
       dueTime: dueTime || undefined,
+      reminderEnabled: Boolean(reminderEnabled && dueTime),
+      reminderOffsetMinutes: reminderEnabled ? reminderOffsetMinutes : 0,
       target: hasTarget
         ? {
             value: Number(targetValue),
@@ -142,7 +191,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Input
             label="Date"
             type="date"
@@ -151,15 +200,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             required
           />
 
-          <Input
-            label="Due Time (Optional)"
-            type="time"
-            value={dueTime}
-            onChange={(e) => setDueTime(e.target.value)}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-text-secondary">Priority</label>
             <select
@@ -188,6 +228,84 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Integrated Push Notification & Reminder Card */}
+        <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-semibold text-slate-900">Task Reminder &amp; Notification</span>
+            </div>
+            <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-blue-700">
+              <input
+                type="checkbox"
+                checked={reminderEnabled}
+                onChange={(e) => handleToggleReminder(e.target.checked)}
+                className="w-4 h-4 accent-blue-600 rounded"
+              />
+              <span>Set Reminder</span>
+            </label>
+          </div>
+
+          {reminderEnabled ? (
+            <div className="space-y-3 pt-1 border-t border-blue-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  label="Notification Time *"
+                  type="time"
+                  value={dueTime}
+                  onChange={(e) => setDueTime(e.target.value)}
+                  required={reminderEnabled}
+                />
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-text-secondary">When to Notify</label>
+                  <select
+                    value={reminderOffsetMinutes}
+                    onChange={(e) => setReminderOffsetMinutes(Number(e.target.value))}
+                    className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                  >
+                    <option value={0}>At exact time</option>
+                    <option value={5}>5 minutes before</option>
+                    <option value={15}>15 minutes before</option>
+                    <option value={30}>30 minutes before</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Inline Permission Status & Instant Enable Button */}
+              {permissionState !== "granted" ? (
+                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-amber-900">
+                    <BellRing className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Allow notifications to receive alerts on this device</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    loading={enablingNotifications}
+                    onClick={handleEnableNotificationsInline}
+                    className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 text-xs py-1 px-3 h-auto"
+                  >
+                    Allow Now
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-700 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>
+                    Device active — notification will ring at {dueTime || "scheduled time"}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-[11px] text-slate-500">
+              Turn on &apos;Set Reminder&apos; to receive a pop-up alert with sound on your phone or computer.
+            </p>
+          )}
         </div>
 
         {/* Measurable Target Toggle */}
