@@ -5,15 +5,17 @@
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
 
-// 2. Initialize Firebase within Service Worker scope
-firebase.initializeApp({
-  apiKey: "AIzaSyBLUiwmGEJLUA29wTCrurmC-EVOLd84gAo",
-  authDomain: "daymark-tracker.firebaseapp.com",
-  projectId: "daymark-tracker",
-  storageBucket: "daymark-tracker.firebasestorage.app",
-  messagingSenderId: "107580700669",
-  appId: "1:107580700669:web:a1253c47590529bc704b94"
-});
+// 2. Initialize Firebase within Service Worker scope safely
+if (!firebase.apps || !firebase.apps.length) {
+  firebase.initializeApp({
+    apiKey: "AIzaSyBLUiwmGEJLUA29wTCrurmC-EVOLd84gAo",
+    authDomain: "daymark-tracker.firebaseapp.com",
+    projectId: "daymark-tracker",
+    storageBucket: "daymark-tracker.firebasestorage.app",
+    messagingSenderId: "107580700669",
+    appId: "1:107580700669:web:a1253c47590529bc704b94"
+  });
+}
 
 const messaging = firebase.messaging();
 
