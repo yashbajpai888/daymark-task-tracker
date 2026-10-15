@@ -1,5 +1,9 @@
 import { getMessaging, getToken, onMessage, isSupported, Messaging } from "firebase/messaging";
-import { app, isFirebaseConfigured } from "./client";
+import { doc, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { app, auth, db, isFirebaseConfigured } from "./client";
+
+export const DEFAULT_VAPID_KEY =
+  "BE8CCbB66AvbYIkpZ36TvKhTN9K3bl90GyJtTa1efFs4w8AgqjZiqlm2CuhnJc5MjtlPt7J8Da4UPhLvHBnJMjk";
 
 export interface PushSupportInfo {
   supported: boolean;
@@ -7,6 +11,7 @@ export interface PushSupportInfo {
   isIOS: boolean;
   isStandalone: boolean;
   needsHomeScreenInstall: boolean;
+  tokenRegistered?: boolean;
   reason?: string;
 }
 
@@ -28,6 +33,26 @@ export function isStandaloneMode(): boolean {
   );
 }
 
+// Deterministic fast hash for document ID in browser
+export async function computeTokenHash(token: string): Promise<string> {
+  if (typeof window !== "undefined" && window.crypto?.subtle) {
+    try {
+      const msgBuffer = new TextEncoder().encode(token);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+    } catch {
+      // Fallback below
+    }
+  }
+  let hash = 0;
+  for (let i = 0; i < token.length; i++) {
+    hash = (hash << 5) - hash + token.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(16, "0").slice(0, 32);
+}
+
 export async function checkPushSupport(): Promise<PushSupportInfo> {
   if (typeof window === "undefined") {
     return {
@@ -36,12 +61,14 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
       isIOS: false,
       isStandalone: false,
       needsHomeScreenInstall: false,
+      tokenRegistered: false,
       reason: "Server-side rendering",
     };
   }
 
   const isIOS = detectDevicePlatform() === "ios";
   const isStandalone = isStandaloneMode();
+  const tokenRegistered = Boolean(localStorage.getItem("daymark_fcm_token"));
 
   if (!("serviceWorker" in navigator)) {
     return {
@@ -50,12 +77,12 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
       isIOS,
       isStandalone,
       needsHomeScreenInstall: false,
+      tokenRegistered: false,
       reason: "Service Workers are not supported in this browser.",
     };
   }
 
   if (!("Notification" in window)) {
-    // On iOS Safari outside standalone mode, Notification API is completely absent
     if (isIOS && !isStandalone) {
       return {
         supported: false,
@@ -63,6 +90,7 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
         isIOS: true,
         isStandalone: false,
         needsHomeScreenInstall: true,
+        tokenRegistered: false,
         reason: "On iOS, Daymark must be added to your Home Screen before Web Push notifications can be enabled.",
       };
     }
@@ -72,6 +100,7 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
       isIOS,
       isStandalone,
       needsHomeScreenInstall: false,
+      tokenRegistered: false,
       reason: "Push notifications are not supported in this browser.",
     };
   }
@@ -85,6 +114,7 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
         isIOS: true,
         isStandalone: false,
         needsHomeScreenInstall: true,
+        tokenRegistered: false,
         reason: "To enable push notifications on iOS, tap Share and select 'Add to Home Screen'.",
       };
     }
@@ -94,6 +124,7 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
       isIOS,
       isStandalone,
       needsHomeScreenInstall: false,
+      tokenRegistered: false,
       reason: "Firebase Cloud Messaging is not supported on this browser version.",
     };
   }
@@ -104,6 +135,7 @@ export async function checkPushSupport(): Promise<PushSupportInfo> {
     isIOS,
     isStandalone,
     needsHomeScreenInstall: false,
+    tokenRegistered,
   };
 }
 
@@ -150,29 +182,35 @@ export async function requestAndRegisterPushToken(
       };
     }
 
-    // Call Notification.requestPermission() immediately synchronously on user click!
-    // iOS Safari strictly requires this without prior awaits, or it ignores the gesture.
+    // Call Notification.requestPermission() immediately synchronously on user gesture!
+    // iOS Safari strictly requires this without prior awaits.
     let permission: NotificationPermission;
     try {
       permission = await Notification.requestPermission();
     } catch {
-      // Fallback for older WebKit callback style
       permission = await new Promise<NotificationPermission>((resolve) => {
         Notification.requestPermission((p) => resolve(p));
       });
     }
 
     if (permission !== "granted") {
+      if (isIOS) {
+        return {
+          success: false,
+          error:
+            "Notification permission was denied. Please go to iPhone Settings > Notifications > Daymark and turn on 'Allow Notifications'.",
+        };
+      }
       return {
         success: false,
         error:
-          "Notification permission was denied. Please go to iPhone Settings > Notifications > Daymark and turn on 'Allow Notifications'.",
+          "Notification permission was not granted. Please click the lock/settings icon next to the browser URL and allow Notifications for this site.",
       };
     }
 
     const messaging = await getClientMessaging();
     if (!messaging) {
-      return { success: false, error: "Firebase Messaging could not be initialized." };
+      return { success: false, error: "Firebase Messaging could not be initialized on this browser." };
     }
 
     // Register or get active service worker registration
@@ -181,39 +219,87 @@ export async function requestAndRegisterPushToken(
     });
     await navigator.serviceWorker.ready;
 
-    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+    // Use environment variable with safe hardcoded fallback
+    const envVapid = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+    const vapidKey =
+      envVapid && envVapid !== "your-public-vapid-key" && envVapid.length > 20
+        ? envVapid
+        : DEFAULT_VAPID_KEY;
 
     const currentToken = await getToken(messaging, {
       serviceWorkerRegistration: swRegistration,
-      vapidKey: vapidKey && vapidKey !== "your-public-vapid-key" ? vapidKey : undefined,
+      vapidKey,
     });
 
     if (!currentToken) {
-      return { success: false, error: "Unable to retrieve FCM registration token." };
+      return { success: false, error: "Unable to retrieve FCM registration token from Google Push Service." };
     }
 
-    // Resolve auth token now that permission has been granted
-    const idToken = typeof tokenOrFn === "function" ? await tokenOrFn() : tokenOrFn;
-
-    // Save token to backend API
-    const platform = detectDevicePlatform();
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (idToken) {
-      headers["Authorization"] = `Bearer ${idToken}`;
-    }
-
-    await fetch("/api/notifications/token", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        token: currentToken,
-        platform,
-        userAgent: navigator.userAgent,
-      }),
-    });
-
-    // Store token in local storage for quick lookup & logout cleanup
+    // Store token in local storage immediately
     localStorage.setItem("daymark_fcm_token", currentToken);
+
+    const platform = detectDevicePlatform();
+    const tokenHash = await computeTokenHash(currentToken);
+
+    // Path 1: Save directly to Firestore via Client SDK if user is authenticated
+    if (auth?.currentUser && db) {
+      try {
+        const uid = auth.currentUser.uid;
+        await setDoc(
+          doc(db, "users", uid, "fcmTokens", tokenHash),
+          {
+            token: currentToken,
+            platform,
+            userAgent: navigator.userAgent,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        // Update reminderSettings pushEnabled flag
+        await setDoc(
+          doc(db, "users", uid, "reminderSettings", "main"),
+          {
+            pushEnabled: true,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (clientFsErr) {
+        console.warn("Client Firestore token save error (will fallback to API route):", clientFsErr);
+      }
+    }
+
+    // Path 2: Save token via backend API route
+    let idToken = typeof tokenOrFn === "function" ? await tokenOrFn() : tokenOrFn;
+    if (!idToken && auth?.currentUser) {
+      idToken = await auth.currentUser.getIdToken();
+    }
+
+    if (idToken) {
+      try {
+        const apiRes = await fetch("/api/notifications/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            token: currentToken,
+            platform,
+            userAgent: navigator.userAgent,
+          }),
+        });
+
+        if (!apiRes.ok) {
+          const errData = await apiRes.json().catch(() => ({}));
+          console.warn("API route token save returned non-200:", errData);
+        }
+      } catch (apiErr) {
+        console.warn("API route token save network error:", apiErr);
+      }
+    }
 
     return { success: true, token: currentToken };
   } catch (err: unknown) {
@@ -227,16 +313,29 @@ export async function unsubscribePushToken(idToken?: string | null): Promise<voi
   try {
     const savedToken = typeof window !== "undefined" ? localStorage.getItem("daymark_fcm_token") : null;
     if (savedToken) {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (idToken) {
-        headers["Authorization"] = `Bearer ${idToken}`;
+      // 1. Remove from client Firestore if authenticated
+      if (auth?.currentUser && db) {
+        const tokenHash = await computeTokenHash(savedToken);
+        await deleteDoc(doc(db, "users", auth.currentUser.uid, "fcmTokens", tokenHash)).catch(() => {});
       }
 
-      await fetch("/api/notifications/token", {
-        method: "DELETE",
-        headers,
-        body: JSON.stringify({ token: savedToken }),
-      });
+      // 2. Remove via API
+      let effectiveIdToken = idToken;
+      if (!effectiveIdToken && auth?.currentUser) {
+        effectiveIdToken = await auth.currentUser.getIdToken();
+      }
+
+      if (effectiveIdToken) {
+        await fetch("/api/notifications/token", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${effectiveIdToken}`,
+          },
+          body: JSON.stringify({ token: savedToken }),
+        }).catch(() => {});
+      }
+
       localStorage.removeItem("daymark_fcm_token");
     }
   } catch (err) {

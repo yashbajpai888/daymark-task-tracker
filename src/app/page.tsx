@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { LandingPage } from "@/components/landing/LandingPage";
+import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 
 export default function HomePage() {
   const { user, profile, loading: authLoading } = useAuth();
@@ -321,6 +322,9 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Push Notification Banner */}
+      <PushNotificationBanner />
 
       {/* 2. Top Summary Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

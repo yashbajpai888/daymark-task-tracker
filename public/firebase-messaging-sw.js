@@ -1,7 +1,23 @@
 /* eslint-disable no-restricted-globals */
 // Daymark Service Worker — PWA Lifecycle & Firebase Cloud Messaging (FCM) Web Push Handler
 
-const CACHE_NAME = "daymark-cache-v1";
+// 1. Import Firebase 10.13.2 Compat scripts required by FCM Web Push in Service Workers
+importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
+
+// 2. Initialize Firebase within Service Worker scope
+firebase.initializeApp({
+  apiKey: "AIzaSyBLUiwmGEJLUA29wTCrurmC-EVOLd84gAo",
+  authDomain: "daymark-tracker.firebaseapp.com",
+  projectId: "daymark-tracker",
+  storageBucket: "daymark-tracker.firebasestorage.app",
+  messagingSenderId: "107580700669",
+  appId: "1:107580700669:web:a1253c47590529bc704b94"
+});
+
+const messaging = firebase.messaging();
+
+const CACHE_NAME = "daymark-cache-v2";
 const ASSETS_TO_CACHE = [
   "/",
   "/manifest.json",
@@ -11,7 +27,7 @@ const ASSETS_TO_CACHE = [
   "/favicon.ico"
 ];
 
-// 1. Install Event — Pre-cache essential app shell assets
+// 3. Install Event — Pre-cache essential app shell assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,7 +36,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// 2. Activate Event — Clean up stale caches and claim clients immediately
+// 4. Activate Event — Clean up stale caches and claim clients immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -31,9 +47,8 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// 3. Fetch Event — Network-first strategy with cache fallback for navigation and static assets
+// 5. Fetch Event — Network-first strategy with cache fallback for navigation and static assets
 self.addEventListener("fetch", (event) => {
-  // Only handle GET requests and avoid caching API calls or chrome-extension requests
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
 
@@ -58,11 +73,54 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// 4. Push Event — Handle incoming FCM / Web Push notifications when app is closed or backgrounded
+// 6. FCM onBackgroundMessage Handler — Standard Firebase background notification handler
+messaging.onBackgroundMessage((payload) => {
+  const notification = payload.notification || {};
+  const data = payload.data || {};
+
+  const title = notification.title || data.title || "Daymark Reminder";
+  const body =
+    notification.body ||
+    data.body ||
+    "You have a scheduled habit or task reminder.";
+  const icon = notification.icon || data.icon || "/icons/icon-192.png";
+  const badge = "/icons/badge-72.png";
+  const tag = data.tag || notification.tag || `daymark-reminder-${Date.now()}`;
+  const clickUrl = data.url || data.click_action || "/daily";
+
+  const options = {
+    body,
+    icon,
+    badge,
+    tag,
+    renotify: true,
+    requireInteraction: false,
+    vibrate: [150, 50, 150],
+    data: {
+      url: clickUrl,
+      timestamp: Date.now(),
+      reminderId: data.reminderId || null,
+      category: data.category || "reminder",
+      ...data
+    },
+    actions: [
+      {
+        action: "open",
+        title: "View in Daymark"
+      },
+      {
+        action: "dismiss",
+        title: "Dismiss"
+      }
+    ]
+  };
+
+  return self.registration.showNotification(title, options);
+});
+
+// 7. Push Event Fallback — Ensures raw Web Push payloads are also handled gracefully
 self.addEventListener("push", (event) => {
-  if (!event.data) {
-    return;
-  }
+  if (!event.data) return;
 
   let payload = {};
   try {
@@ -76,7 +134,12 @@ self.addEventListener("push", (event) => {
     };
   }
 
-  // Parse title, body, and metadata from either FCM standard payload or data payload
+  // If Firebase compat onBackgroundMessage already processed this FCM payload, skip duplicate display
+  if (payload.from && payload.fcmMessageId) {
+    // FCM will route to onBackgroundMessage
+    return;
+  }
+
   const notificationData = payload.notification || {};
   const customData = payload.data || {};
 
@@ -97,18 +160,16 @@ self.addEventListener("push", (event) => {
     tag,
     renotify: true,
     requireInteraction: false,
-    vibrate: [100, 50, 100],
+    vibrate: [150, 50, 150],
     data: {
       url: clickUrl,
       timestamp: Date.now(),
-      reminderId: customData.reminderId || null,
-      category: customData.category || "reminder",
       ...customData
     },
     actions: [
       {
         action: "open",
-        title: "View Tasks"
+        title: "View in Daymark"
       },
       {
         action: "dismiss",
@@ -120,7 +181,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// 5. Notification Click Event — Focus existing tab or open target route
+// 8. Notification Click Event — Focus existing tab or open target route
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 

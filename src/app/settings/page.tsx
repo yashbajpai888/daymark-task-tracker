@@ -409,6 +409,34 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* OS-Level Troubleshooting Guide */}
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2 text-xs">
+            <span className="font-semibold text-slate-900 block flex items-center gap-1.5">
+              <HelpCircle className="w-4 h-4 text-blue-600" />
+              OS Notification Permissions Checklist
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 pt-1">
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
+                <span className="font-semibold text-slate-800 block">💻 Laptop (Windows / Mac)</span>
+                <p className="text-[11px] leading-relaxed">
+                  Ensure Windows <strong>Focus Assist</strong> or Mac <strong>Do Not Disturb</strong> is off, and notifications are allowed for Chrome/Edge in Windows Settings &gt; System &gt; Notifications.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
+                <span className="font-semibold text-slate-800 block">🤖 Android</span>
+                <p className="text-[11px] leading-relaxed">
+                  Go to Android <strong>Settings &gt; Apps &gt; Chrome &gt; Notifications</strong> and ensure &apos;All Chrome notifications&apos; is switched on with sound enabled.
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
+                <span className="font-semibold text-slate-800 block">📱 iPhone (iOS 16.4+)</span>
+                <p className="text-[11px] leading-relaxed">
+                  Daymark must be launched from your Home Screen. Check iPhone <strong>Settings &gt; Notifications &gt; Daymark</strong> to ensure &apos;Allow Notifications&apos; is active.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {pushResult && (
             <FeedbackBanner
               type={pushResult.success ? "success" : "error"}

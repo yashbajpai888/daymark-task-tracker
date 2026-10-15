@@ -20,14 +20,15 @@ async function handleCron(req: NextRequest) {
 
     let targetUid: string | null = null;
 
+    const querySecret = req.nextUrl.searchParams.get("secret");
+    const isSecretAuthorized = Boolean(cronSecret && (authHeader === `Bearer ${cronSecret}` || querySecret === cronSecret));
+
     // Check authorization:
     // 1. Vercel Cron header
-    // 2. Secret Bearer token
+    // 2. Secret Bearer token or ?secret=... parameter
     // 3. Authenticated user ID token (allows client app to trigger check on schedule)
-    if (!isVercelCron) {
-      if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
-        // Authorized via CRON_SECRET
-      } else if (authHeader && authHeader.startsWith("Bearer ") && adminAuth) {
+    if (!isVercelCron && !isSecretAuthorized) {
+      if (authHeader && authHeader.startsWith("Bearer ") && adminAuth) {
         try {
           const idToken = authHeader.split("Bearer ")[1];
           const decoded = await adminAuth.verifyIdToken(idToken);

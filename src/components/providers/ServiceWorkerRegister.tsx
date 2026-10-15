@@ -40,15 +40,34 @@ export const ServiceWorkerRegister: React.FC = () => {
         url: payload.data?.url || "/daily",
       });
 
-      // Also trigger browser notification if permission is already granted
+      // Trigger native notification if permission is already granted
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-        try {
-          new Notification(payload.title, {
-            body: payload.body,
-            icon: "/icons/icon-192.png",
-          });
-        } catch {
-          // Some mobile browsers require serviceWorker.showNotification
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.ready
+            .then((reg) => {
+              reg.showNotification(payload.title, {
+                body: payload.body,
+                icon: "/icons/icon-192.png",
+                badge: "/icons/badge-72.png",
+                tag: payload.data?.tag || `daymark-${Date.now()}`,
+                data: { url: payload.data?.url || "/daily" },
+              });
+            })
+            .catch(() => {
+              try {
+                new Notification(payload.title, {
+                  body: payload.body,
+                  icon: "/icons/icon-192.png",
+                });
+              } catch {}
+            });
+        } else {
+          try {
+            new Notification(payload.title, {
+              body: payload.body,
+              icon: "/icons/icon-192.png",
+            });
+          } catch {}
         }
       }
     });

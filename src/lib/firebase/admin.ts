@@ -2,11 +2,20 @@ import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getAuth, Auth } from "firebase-admin/auth";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
-const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "daymark-tracker";
+const clientEmail =
+  process.env.FIREBASE_CLIENT_EMAIL ||
+  "firebase-adminsdk-fbsvc@daymark-tracker.iam.gserviceaccount.com";
 let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
 if (privateKey) {
+  // Strip enclosing quotes if present (common when importing env in Vercel or docker)
+  if (
+    (privateKey.startsWith('"') && privateKey.endsWith('"')) ||
+    (privateKey.startsWith("'") && privateKey.endsWith("'"))
+  ) {
+    privateKey = privateKey.slice(1, -1);
+  }
   // Replace escaped newlines with actual line breaks
   privateKey = privateKey.replace(/\\n/g, "\n");
 }
