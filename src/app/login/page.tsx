@@ -99,14 +99,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-xl shadow-blue-500/5 space-y-6">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center p-3.5 sm:p-6 py-8 safe-top safe-bottom">
+      <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-8 shadow-xl shadow-blue-500/5 space-y-5 sm:space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center mx-auto mb-3 shadow-md shadow-blue-600/20">
             <div className="w-4 h-4 rounded-sm bg-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Daymark</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Daymark</h1>
           <p className="text-xs text-slate-500">
             {mode === "signup"
               ? "Create your personal productivity workspace"
@@ -205,7 +205,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 focus:outline-none"
+              className="absolute right-2 top-[24px] text-slate-400 hover:text-slate-600 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

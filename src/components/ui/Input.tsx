@@ -22,7 +22,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={`w-full min-h-[44px] h-11 px-3.5 bg-surface text-text-primary placeholder:text-text-secondary/50 border ${
             error ? "border-danger focus:ring-danger" : "border-border focus:border-accent"
-          } rounded-lg text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:bg-surface-elevated/40 ${className}`}
+          } rounded-lg text-base sm:text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:bg-surface-elevated/40 ${className}`}
           {...props}
         />
         {error ? (

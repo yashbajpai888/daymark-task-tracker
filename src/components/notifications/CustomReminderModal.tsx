@@ -121,29 +121,29 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
             <span className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider block">
               Quick Habit Presets
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => applyPreset(PRESET_REMINDERS[0])}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center"
+                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center min-h-[36px]"
               >
-                <Dumbbell className="w-3.5 h-3.5 text-orange-500" />
+                <Dumbbell className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                 <span>Gym (7 AM)</span>
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset(PRESET_REMINDERS[1])}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center"
+                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center min-h-[36px]"
               >
-                <Footprints className="w-3.5 h-3.5 text-emerald-500" />
+                <Footprints className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 <span>Running</span>
               </button>
               <button
                 type="button"
                 onClick={() => applyPreset(PRESET_REMINDERS[2])}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center"
+                className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-border bg-surface-elevated/40 hover:bg-surface-elevated text-xs font-medium text-text-primary transition-colors text-center min-h-[36px]"
               >
-                <Droplet className="w-3.5 h-3.5 text-blue-500" />
+                <Droplet className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                 <span>Water</span>
               </button>
             </div>
@@ -163,7 +163,7 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as CustomReminderCategory)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full min-h-[44px] px-3 py-2 rounded-lg border border-border bg-surface text-text-primary text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <option value="gym">Gym / Training</option>
             <option value="running">Running / Cardio</option>
@@ -182,7 +182,7 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
           hint="Short description shown in the push notification."
         />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             label="Reminder Time (HH:mm)"
             type="time"
@@ -196,7 +196,7 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
             <select
               value={repeatType}
               onChange={(e) => setRepeatType(e.target.value as ReminderRepeatType)}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full min-h-[44px] px-3 py-2 rounded-lg border border-border bg-surface text-text-primary text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             >
               <option value="daily">Every Day</option>
               <option value="selected-weekdays">Selected Weekdays</option>
@@ -210,7 +210,7 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
         {repeatType === "selected-weekdays" && (
           <div className="space-y-1.5 pt-1">
             <label className="text-xs font-semibold text-text-primary">Active Days</label>
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
               {weekdaysList.map((day) => {
                 const active = selectedWeekdays.includes(day.val);
                 return (
@@ -218,7 +218,7 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
                     key={day.val}
                     type="button"
                     onClick={() => toggleWeekday(day.val)}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
+                    className={`flex-1 min-w-[32px] py-2 text-xs font-semibold rounded-md border transition-colors ${
                       active
                         ? "bg-blue-600 text-white border-blue-600 shadow-xs"
                         : "bg-surface text-text-secondary border-border hover:bg-surface-elevated"
@@ -265,11 +265,11 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-border">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" variant="primary" loading={submitting}>
+          <Button type="submit" variant="primary" loading={submitting} className="w-full sm:w-auto">
             {initialReminder ? "Save Changes" : "Create Reminder"}
           </Button>
         </div>

@@ -138,12 +138,12 @@ export const TaskRow: React.FC<TaskRowProps> = ({
               <span className="text-text-secondary">
                 Target: <strong className="text-text-primary">{task.target.progress}</strong> / {task.target.value} {task.target.unit}
               </span>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   disabled={task.target.progress <= 0 || isCancelled}
                   onClick={() => onUpdateTargetProgress && onUpdateTargetProgress(task.id, Math.max(0, task.target!.progress - 1))}
-                  className="px-2 py-1 rounded bg-surface-elevated hover:bg-border text-text-primary disabled:opacity-40"
+                  className="px-2.5 py-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded bg-surface-elevated hover:bg-border active:bg-border/80 text-text-primary text-xs font-semibold disabled:opacity-40"
                 >
                   -1
                 </button>
@@ -151,7 +151,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
                   type="button"
                   disabled={isCancelled}
                   onClick={() => onUpdateTargetProgress && onUpdateTargetProgress(task.id, task.target!.progress + 1)}
-                  className="px-2 py-1 rounded bg-accent/20 hover:bg-accent/30 text-accent font-medium disabled:opacity-40"
+                  className="px-2.5 py-1 min-w-[32px] min-h-[32px] flex items-center justify-center rounded bg-accent/20 hover:bg-accent/30 active:bg-accent/40 text-accent font-bold text-xs disabled:opacity-40"
                 >
                   +1
                 </button>
@@ -163,7 +163,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
           {subtasksOpen && task.subtasks && task.subtasks.length > 0 && (
             <div className="mt-3 pt-2.5 border-t border-border/40 space-y-2">
               {task.subtasks.map((st) => (
-                <div key={st.id} className="flex items-center gap-2.5 pl-2">
+                <div key={st.id} className="flex items-center gap-2.5 pl-1 sm:pl-2">
                   <Checkbox
                     checked={st.isCompleted}
                     onChange={() => handleToggleSubtask(st.id)}
@@ -180,7 +180,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated active:bg-surface-elevated transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
             aria-label="Task options"
           >
             <MoreVertical className="w-4 h-4" />
@@ -192,14 +192,14 @@ export const TaskRow: React.FC<TaskRowProps> = ({
                 className="fixed inset-0 z-20"
                 onClick={() => setMenuOpen(false)}
               />
-              <div className="absolute right-0 top-8 w-36 bg-surface border border-border rounded-lg shadow-xl py-1 z-30 space-y-0.5">
+              <div className="absolute right-0 top-9 w-36 bg-surface border border-border rounded-lg shadow-xl py-1 z-30 space-y-0.5">
                 <button
                   type="button"
                   onClick={() => {
                     setMenuOpen(false);
                     onEditTask(task);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-primary hover:bg-surface-elevated text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-text-primary hover:bg-surface-elevated text-left min-h-[36px]"
                 >
                   <Edit3 className="w-3.5 h-3.5 text-text-secondary" />
                   <span>Edit</span>
@@ -212,7 +212,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
                       setMenuOpen(false);
                       onCancelTask(task.id);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-warning hover:bg-surface-elevated text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-warning hover:bg-surface-elevated text-left min-h-[36px]"
                   >
                     <Ban className="w-3.5 h-3.5 text-warning" />
                     <span>Cancel</span>
@@ -227,7 +227,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
                       onDeleteTask(task.id);
                     }
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-danger hover:bg-danger/10 text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-danger hover:bg-danger/10 text-left min-h-[36px]"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-danger" />
                   <span>Delete</span>

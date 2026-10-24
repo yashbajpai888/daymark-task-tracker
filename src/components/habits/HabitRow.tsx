@@ -41,7 +41,7 @@ export const HabitRow: React.FC<HabitRowProps> = ({
           : "bg-surface/30 border-border/40 opacity-60"
       }`}
     >
-      <div className="flex items-center gap-3.5 truncate">
+      <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1 pr-2">
         <div
           className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
             template.isActive
@@ -52,13 +52,13 @@ export const HabitRow: React.FC<HabitRowProps> = ({
           <Flame className="w-5 h-5" />
         </div>
 
-        <div className="truncate">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h4 className="text-sm sm:text-base font-semibold text-text-primary truncate">
               {template.title}
             </h4>
             {!template.isActive && (
-              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-surface-elevated text-text-secondary border border-border">
+              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-surface-elevated text-text-secondary border border-border shrink-0">
                 Paused
               </span>
             )}
@@ -84,11 +84,11 @@ export const HabitRow: React.FC<HabitRowProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <button
           type="button"
           onClick={() => onToggleActive(template)}
-          className={`p-2 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition-colors ${
+          className={`p-2 min-h-[36px] rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-colors active:scale-95 ${
             template.isActive
               ? "bg-surface-elevated hover:bg-border text-text-secondary border-border"
               : "bg-accent/15 hover:bg-accent/25 text-accent border-accent/30"
@@ -109,7 +109,7 @@ export const HabitRow: React.FC<HabitRowProps> = ({
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated active:bg-surface-elevated transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
             aria-label="Habit options"
           >
             <MoreVertical className="w-4 h-4" />

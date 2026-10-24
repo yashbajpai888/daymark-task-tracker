@@ -103,11 +103,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       />
 
       {/* Drawer */}
-      <div className="relative w-full max-w-md bg-surface border-l border-border h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-200">
+      <div className="relative w-full sm:max-w-md bg-surface border-l border-border h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-surface">
-          <div className="flex items-center gap-2.5">
-            <div className="relative p-2 rounded-lg bg-blue-50 text-blue-600">
+        <div className="flex items-center justify-between px-4 sm:px-5 pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-4 border-b border-border bg-surface">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <div className="relative p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0">
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
@@ -115,9 +115,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 </span>
               )}
             </div>
-            <div>
-              <h2 className="text-base font-semibold text-text-primary">Notification Center</h2>
-              <p className="text-xs text-text-secondary">
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-text-primary truncate">Notification Center</h2>
+              <p className="text-xs text-text-secondary truncate">
                 {unreadCount > 0
                   ? `${unreadCount} unread reminder notification${unreadCount === 1 ? "" : "s"}`
                   : "All reminders caught up"}
@@ -128,7 +128,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
+            className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0"
+            aria-label="Close notification center"
           >
             <X className="w-5 h-5" />
           </button>

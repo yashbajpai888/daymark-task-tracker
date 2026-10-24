@@ -137,7 +137,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             >
               {categories.map((c) => (
                 <option key={c.id || c.slug} value={c.id || c.slug}>
@@ -152,7 +152,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as Priority)}
-              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -169,7 +169,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
               <button
                 type="button"
                 onClick={() => setRecurrenceType("daily")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors ${
+                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors min-h-[40px] flex items-center justify-center ${
                   recurrenceType === "daily"
                     ? "bg-accent/20 border-accent text-accent font-semibold"
                     : "bg-surface border-border text-text-secondary hover:text-text-primary"
@@ -180,7 +180,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
               <button
                 type="button"
                 onClick={() => setRecurrenceType("selected-weekdays")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors ${
+                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors min-h-[40px] flex items-center justify-center text-center ${
                   recurrenceType === "selected-weekdays"
                     ? "bg-accent/20 border-accent text-accent font-semibold"
                     : "bg-surface border-border text-text-secondary hover:text-text-primary"
@@ -191,7 +191,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
               <button
                 type="button"
                 onClick={() => setRecurrenceType("weekly")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors ${
+                className={`py-2 px-3 text-xs font-medium rounded-lg border transition-colors min-h-[40px] flex items-center justify-center ${
                   recurrenceType === "weekly"
                     ? "bg-accent/20 border-accent text-accent font-semibold"
                     : "bg-surface border-border text-text-secondary hover:text-text-primary"
@@ -203,7 +203,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
           </div>
 
           {recurrenceType === "selected-weekdays" && (
-            <div className="flex items-center gap-1.5 pt-1">
+            <div className="flex items-center gap-1.5 pt-1 overflow-x-auto pb-1">
               {weekdaysList.map((day) => {
                 const active = selectedWeekdays.includes(day.val);
                 return (
@@ -211,7 +211,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
                     key={day.val}
                     type="button"
                     onClick={() => toggleWeekday(day.val)}
-                    className={`flex-1 h-9 rounded-lg text-xs font-medium border transition-colors ${
+                    className={`flex-1 min-w-[32px] h-10 rounded-lg text-xs font-medium border transition-colors ${
                       active
                         ? "bg-blue-600 text-white border-blue-600 font-semibold shadow-xs"
                         : "bg-surface border-border text-text-secondary hover:text-text-primary"
@@ -254,7 +254,7 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
           </label>
 
           {hasTarget && (
-            <div className="grid grid-cols-2 gap-3 mt-3 pl-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pl-0 sm:pl-6">
               <Input
                 label="Goal Amount"
                 type="number"
@@ -272,11 +272,22 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3 pt-4 border-t border-border">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={submitting}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="primary" loading={submitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={submitting}
+            className="w-full sm:w-auto"
+          >
             {initialTemplate ? "Save Habit" : "Create Habit"}
           </Button>
         </div>

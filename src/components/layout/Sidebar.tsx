@@ -58,9 +58,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-surface shrink-0 h-screen sticky top-0 select-none">
+      <aside className="hidden md:flex flex-col w-56 lg:w-64 border-r border-border bg-surface shrink-0 h-screen sticky top-0 select-none">
         {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-border">
+        <div className="flex items-center justify-between h-16 px-4 lg:px-6 border-b border-border">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-xs">
               <div className="w-3.5 h-3.5 rounded-sm bg-white" />

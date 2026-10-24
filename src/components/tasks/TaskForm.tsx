@@ -184,7 +184,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </label>
           <textarea
             rows={2}
-            className="w-full p-3 bg-surface text-text-primary placeholder:text-text-secondary/50 border border-border focus:border-accent rounded-lg text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
+            className="w-full p-3 bg-surface text-text-primary placeholder:text-text-secondary/50 border border-border focus:border-accent rounded-lg text-base sm:text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-accent"
             placeholder="Optional context, links, or details..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -205,7 +205,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as Priority)}
-              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -218,7 +218,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="">Uncategorized</option>
               {categories.map((c) => (
@@ -232,9 +232,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
         {/* Integrated Push Notification & Reminder Card */}
         <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-blue-600" />
+              <Bell className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="text-xs font-semibold text-slate-900">Task Reminder &amp; Notification</span>
             </div>
             <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-blue-700">
@@ -264,7 +264,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                   <select
                     value={reminderOffsetMinutes}
                     onChange={(e) => setReminderOffsetMinutes(Number(e.target.value))}
-                    className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="w-full min-h-[44px] px-3 bg-surface text-text-primary border border-border rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent"
                   >
                     <option value={0}>At exact time</option>
                     <option value={5}>5 minutes before</option>
@@ -276,7 +276,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
               {/* Inline Permission Status & Instant Enable Button */}
               {permissionState !== "granted" ? (
-                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between gap-2 text-xs">
+                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 text-amber-900">
                     <BellRing className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Allow notifications to receive alerts on this device</span>
@@ -287,7 +287,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                     size="sm"
                     loading={enablingNotifications}
                     onClick={handleEnableNotificationsInline}
-                    className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 text-xs py-1 px-3 h-auto"
+                    className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 text-xs py-1.5 px-3 h-auto w-full sm:w-auto"
                   >
                     Allow Now
                   </Button>
@@ -321,7 +321,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </label>
 
           {hasTarget && (
-            <div className="grid grid-cols-2 gap-3 mt-3 pl-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pl-0 sm:pl-6">
               <Input
                 label="Target Goal"
                 type="number"
@@ -360,6 +360,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               size="md"
               onClick={handleAddSubtask}
               disabled={!newSubtaskTitle.trim()}
+              className="shrink-0"
             >
               <Plus className="w-4 h-4" />
             </Button>
@@ -386,11 +387,22 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
-          <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 sm:gap-3 pt-4 border-t border-border">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={submitting}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="primary" loading={submitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={submitting}
+            className="w-full sm:w-auto"
+          >
             {initialTask ? "Save Changes" : "Create Task"}
           </Button>
         </div>

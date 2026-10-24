@@ -63,10 +63,10 @@ export const AppShell: React.FC<AppShellProps> = ({
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
+      <main className="flex-1 flex flex-col min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-8">
         {/* Banner if Firebase is not yet configured in .env.local */}
         {!isConfigured && (
-          <div className="bg-blue-50/80 border-b border-blue-200/80 px-4 py-2.5 flex items-center justify-between text-xs text-blue-900">
+          <div className="bg-blue-50/80 border-b border-blue-200/80 px-3.5 sm:px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-900">
             <div className="flex items-center gap-2">
               <KeyRound className="w-4 h-4 shrink-0 text-blue-600" />
               <span>
@@ -75,14 +75,14 @@ export const AppShell: React.FC<AppShellProps> = ({
             </div>
             <Link
               href="/login"
-              className="text-blue-700 underline hover:text-blue-950 font-semibold shrink-0 ml-3"
+              className="text-blue-700 underline hover:text-blue-950 font-semibold shrink-0 sm:ml-3"
             >
               Account / Sign In
             </Link>
           </div>
         )}
 
-        <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6">
+        <div className="flex-1 max-w-6xl w-full mx-auto px-3.5 sm:px-6 md:px-8 py-4 sm:py-6">
           {children}
         </div>
       </main>

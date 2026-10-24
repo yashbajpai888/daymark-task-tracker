@@ -58,25 +58,25 @@ export const DateStrip: React.FC<DateStripProps> = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm sm:text-base font-semibold text-text-primary tracking-tight">
+      <div className="flex items-center justify-center gap-1.5 sm:gap-2 min-w-0 flex-1 px-1 sm:px-2">
+        <span className="text-xs sm:text-base font-semibold text-text-primary tracking-tight truncate text-center">
           {formatDisplayDate(currentDate)}
         </span>
         {isToday && (
-          <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-accent/20 text-accent border border-accent/30">
+          <span className="px-1.5 sm:px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-accent/20 text-accent border border-accent/30 shrink-0">
             Today
           </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {!isToday && (
           <button
             type="button"
             onClick={handleToday}
-            className="hidden sm:inline-flex px-3 py-1.5 text-xs font-semibold rounded-lg bg-surface-elevated hover:bg-border text-text-primary border border-border transition-colors"
+            className="px-2 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold rounded-lg bg-surface-elevated hover:bg-border text-text-primary border border-border transition-colors shrink-0"
           >
-            Go to Today
+            Today
           </button>
         )}
 

@@ -48,7 +48,7 @@ export const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
         </p>
       </div>
 
-      <div className="w-full h-64">
+      <div className="w-full min-w-0 h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>

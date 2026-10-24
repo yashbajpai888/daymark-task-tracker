@@ -34,7 +34,7 @@ export const CompletionDonut: React.FC<CompletionDonutProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-surface border border-border rounded-xl">
-      <div className="relative w-full h-52 flex items-center justify-center">
+      <div className="relative w-full min-w-0 h-52 flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -73,7 +73,7 @@ export const CompletionDonut: React.FC<CompletionDonutProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-6 mt-2 text-xs">
+      <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-accent" />
           <span className="text-text-primary font-medium">{completed} Completed</span>

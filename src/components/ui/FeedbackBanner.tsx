@@ -51,7 +51,7 @@ export const FeedbackBanner: React.FC<FeedbackBannerProps> = ({
         <button
           type="button"
           onClick={onDismiss}
-          className="text-text-secondary hover:text-text-primary p-1 -mr-1 -mt-1 rounded"
+          className="text-text-secondary hover:text-text-primary flex items-center justify-center min-w-[36px] min-h-[36px] p-1 -mr-2 -mt-2 rounded-md active:bg-black/5"
           aria-label="Dismiss banner"
         >
           <X className="w-4 h-4" />

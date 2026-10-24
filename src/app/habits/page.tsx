@@ -140,16 +140,18 @@ export default function HabitsPage() {
         title="Recurring Habits"
         subtitle="Build consistency with automated daily schedules and measurable targets."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="secondary"
               size="md"
               loading={generating}
               onClick={handleTriggerGeneration}
               title="Ensure all scheduled habit instances exist for today"
+              className="flex-1 sm:flex-initial text-xs sm:text-sm justify-center"
             >
-              <RefreshCw className="w-4 h-4 mr-1.5" />
-              <span>Generate for Today</span>
+              <RefreshCw className="w-4 h-4 mr-1.5 shrink-0" />
+              <span className="hidden sm:inline">Generate for Today</span>
+              <span className="sm:hidden">Sync Today</span>
             </Button>
             <Button
               variant="primary"
@@ -158,8 +160,9 @@ export default function HabitsPage() {
                 setEditingTemplate(null);
                 setFormOpen(true);
               }}
+              className="flex-1 sm:flex-initial text-xs sm:text-sm justify-center"
             >
-              <Plus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1 shrink-0" />
               <span>New Habit</span>
             </Button>
           </div>

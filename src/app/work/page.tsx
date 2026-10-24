@@ -126,9 +126,46 @@ export default function WorkPage() {
         }
       />
 
+      {/* Mobile Horizontal Category Rail */}
+      <div className="md:hidden mb-4">
+        <div className="flex items-center justify-between px-1 mb-2">
+          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+            Workspaces
+          </span>
+          <button
+            type="button"
+            onClick={handleAddCategory}
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+            <span>New</span>
+          </button>
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar -mx-3.5 px-3.5">
+          {categories.map((cat) => {
+            const isSelected = selectedCategory?.id === cat.id;
+            return (
+              <button
+                key={cat.id || cat.slug}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold shrink-0 transition-colors ${
+                  isSelected
+                    ? "bg-blue-50 text-blue-700 border-blue-200 shadow-xs"
+                    : "bg-surface text-text-secondary hover:text-text-primary border-border"
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5 shrink-0" />
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Categories Rail */}
-        <div className="md:col-span-1 space-y-2">
+        {/* Desktop / Laptop Categories Rail */}
+        <div className="hidden md:block md:col-span-1 space-y-2">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider block px-1 mb-2">
             Workspaces
           </span>
@@ -140,7 +177,7 @@ export default function WorkPage() {
                   key={cat.id || cat.slug}
                   className={`group flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                     isSelected
-                      ? "bg-surface-elevated text-accent border-accent/40"
+                      ? "bg-surface-elevated text-accent border-accent/40 font-semibold"
                       : "bg-surface text-text-secondary hover:text-text-primary border-border"
                   }`}
                 >
@@ -157,7 +194,7 @@ export default function WorkPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteCategory(cat)}
-                      className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-danger p-1 rounded"
+                      className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-text-secondary hover:text-danger p-1 rounded transition-opacity"
                       title="Delete category"
                     >
                       <Trash2 className="w-3 h-3" />

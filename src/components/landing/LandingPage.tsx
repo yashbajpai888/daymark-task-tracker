@@ -72,10 +72,11 @@ export const LandingPage: React.FC = () => {
           </nav>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-3">
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <Link
               href="/login"
-              className="text-sm font-semibold text-slate-700 hover:text-blue-600 px-3 py-2 transition-colors"
+              className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 px-2.5 sm:px-3 py-2 transition-colors"
             >
               Sign In
             </Link>
@@ -83,7 +84,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 variant="primary"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm rounded-lg px-4"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm rounded-lg px-3 sm:px-4 text-xs sm:text-sm"
               >
                 Get Started Free
               </Button>
@@ -93,18 +94,18 @@ export const LandingPage: React.FC = () => {
       </header>
 
       {/* 2. Hero Section */}
-      <section className="relative pt-16 sm:pt-24 pb-16 px-4 sm:px-6 max-w-6xl mx-auto w-full text-center">
+      <section className="relative pt-12 sm:pt-20 md:pt-24 pb-12 sm:pb-16 px-4 sm:px-6 max-w-6xl mx-auto w-full text-center">
         {/* Glow ambient background effect */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-blue-400/10 blur-[100px] -z-10 rounded-full pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[550px] h-[250px] sm:h-[300px] bg-blue-400/10 blur-[80px] sm:blur-[100px] -z-10 rounded-full pointer-events-none" />
 
         {/* Hero Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-6 shadow-xs animate-fade-in">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
-          <span>The Calm, High-Performance Productivity Workspace</span>
+        <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-6 shadow-xs animate-fade-in max-w-[95%]">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse shrink-0" />
+          <span className="truncate">The Calm, High-Performance Productivity Workspace</span>
         </div>
 
         {/* Main Heading */}
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-[1.12]">
+        <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-[1.15]">
           Master your daily focus.{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
             Build lasting habits.
@@ -112,17 +113,17 @@ export const LandingPage: React.FC = () => {
         </h1>
 
         {/* Subtitle */}
-        <p className="mt-5 text-base sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
+        <p className="mt-4 sm:mt-5 text-sm sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Daymark replaces messy, overwhelming to-do lists with a structured day-by-day system. Organize daily work sprints, automate recurring habits, and protect your focus.
         </p>
 
         {/* CTA Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
           <Link href="/login" className="w-full sm:w-auto">
             <Button
               variant="primary"
               size="lg"
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-7 h-12 shadow-md shadow-blue-600/20 text-base rounded-xl"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 sm:px-7 h-12 shadow-md shadow-blue-600/20 text-sm sm:text-base rounded-xl justify-center"
             >
               <span>Create Your Free Account</span>
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -133,9 +134,9 @@ export const LandingPage: React.FC = () => {
             <Button
               variant="secondary"
               size="lg"
-              className="w-full sm:w-auto bg-white text-slate-800 hover:bg-slate-50 border-slate-200 font-semibold px-6 h-12 rounded-xl"
+              className="w-full sm:w-auto bg-white text-slate-800 hover:bg-slate-50 border-slate-200 font-semibold px-5 sm:px-6 h-12 rounded-xl text-sm sm:text-base justify-center"
             >
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 mr-2 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -158,24 +159,24 @@ export const LandingPage: React.FC = () => {
           </Link>
         </div>
 
-        <p className="mt-3.5 text-xs text-slate-500 flex items-center justify-center gap-1.5">
-          <Shield className="w-3.5 h-3.5 text-blue-600" />
-          <span>Sign in required to create and manage personal tasks. Zero credit card needed.</span>
+        <p className="mt-3.5 text-xs text-slate-500 flex items-center justify-center gap-1.5 px-2">
+          <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <span>Zero credit card needed • Free forever for individuals</span>
         </p>
 
         {/* 3. Interactive Live Workspace Preview */}
-        <div className="mt-14 max-w-4xl mx-auto text-left">
-          <div className="relative rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-7 shadow-2xl shadow-blue-600/10 overflow-hidden">
+        <div className="mt-10 sm:mt-14 max-w-4xl mx-auto text-left">
+          <div className="relative rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-7 shadow-2xl shadow-blue-600/10 overflow-hidden">
             {/* Top Bar of Mock App */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center shadow-xs">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center shadow-xs shrink-0">
                   DM
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-base text-slate-900">Today&apos;s Focus</h3>
-                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    <h3 className="font-bold text-sm sm:text-base text-slate-900">Today&apos;s Focus</h3>
+                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
                       Live Preview
                     </span>
                   </div>
@@ -186,36 +187,36 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Progress pill */}
-              <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-xl px-4 py-2">
-                <div className="text-right">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="flex items-center justify-between sm:justify-end gap-3 bg-slate-50 border border-slate-200/80 rounded-xl px-3 sm:px-4 py-2 w-full sm:w-auto">
+                <div>
+                  <div className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     Progress
                   </div>
                   <div className="text-xs font-bold text-slate-800">
                     {completedCount} of {demoTasks.length} Completed
                   </div>
                 </div>
-                <div className="text-lg font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                <div className="text-base sm:text-lg font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
                   {progressPercent}%
                 </div>
               </div>
             </div>
 
             {/* Interactive Tasks Preview List */}
-            <div className="mt-5 space-y-2.5">
+            <div className="mt-4 sm:mt-5 space-y-2 sm:space-y-2.5">
               {demoTasks.map((task) => (
                 <div
                   key={task.id}
                   onClick={() => toggleDemoTask(task.id)}
-                  className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer ${
+                  className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl border transition-all cursor-pointer ${
                     task.done
                       ? "bg-slate-50/70 border-slate-200 text-slate-400 opacity-80"
                       : "bg-white border-slate-200/90 text-slate-800 hover:border-blue-300 hover:shadow-xs"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 pr-2">
                     <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
+                      className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
                         task.done
                           ? "bg-blue-600 border-blue-600 text-white"
                           : "border-slate-300 bg-white"
@@ -224,7 +225,7 @@ export const LandingPage: React.FC = () => {
                       {task.done && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     </div>
                     <span
-                      className={`text-sm font-medium truncate ${
+                      className={`text-xs sm:text-sm font-medium truncate ${
                         task.done ? "line-through text-slate-400" : "text-slate-800"
                       }`}
                     >
@@ -272,24 +273,25 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 4. "What is Daymark?" Section (The Platform Story) */}
-      <section id="features" className="py-20 bg-white border-y border-slate-200/80">
+      {/* 4. "What is Daymark?" Section (The Platform Story) */}
+      <section id="features" className="py-12 sm:py-20 bg-white border-y border-slate-200/80">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
               Why Daymark?
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
               Built specifically to end to-do list fatigue
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base mt-3">
+            <p className="text-slate-600 text-xs sm:text-base mt-2 sm:mt-3">
               Most productivity apps fail because they become endless dumps of guilt. Daymark is designed around daily clarity, intentional focus, and clean habit execution.
             </p>
           </div>
 
           {/* 4 Feature Pillars Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Pillar 1 */}
-            <div className="p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+            <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
               <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
                 <Target className="w-5 h-5 text-blue-600" />
               </div>
@@ -300,7 +302,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Pillar 2 */}
-            <div className="p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+            <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
               <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
                 <Flame className="w-5 h-5 text-amber-600" />
               </div>
@@ -311,7 +313,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Pillar 3 */}
-            <div className="p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+            <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center mb-4">
                 <Zap className="w-5 h-5 text-indigo-600" />
               </div>
@@ -322,7 +324,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Pillar 4 */}
-            <div className="p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
+            <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/90 bg-slate-50/50 hover:bg-white hover:shadow-lg hover:shadow-blue-500/5 transition-all">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
                 <TrendingUp className="w-5 h-5 text-emerald-600" />
               </div>
@@ -336,42 +338,42 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 5. "How It Works" 3-Step Section */}
-      <section id="workflow" className="py-20 max-w-6xl mx-auto px-4 sm:px-6 w-full">
-        <div className="text-center max-w-xl mx-auto mb-16">
+      <section id="workflow" className="py-12 sm:py-20 max-w-6xl mx-auto px-4 sm:px-6 w-full">
+        <div className="text-center max-w-xl mx-auto mb-10 sm:mb-16">
           <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
             Simple 3-Step Flow
           </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-3">
             How your day transforms with Daymark
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-7 shadow-xs relative">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center mb-4">
               1
             </div>
-            <h4 className="text-lg font-bold text-slate-900">Sign in securely</h4>
+            <h4 className="text-base sm:text-lg font-bold text-slate-900">Sign in securely</h4>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
               Authenticate via Google or Email to unlock your private, isolated database in Cloud Firestore.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs relative">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-7 shadow-xs relative">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center mb-4">
               2
             </div>
-            <h4 className="text-lg font-bold text-slate-900">Set today&apos;s targets</h4>
+            <h4 className="text-base sm:text-lg font-bold text-slate-900">Set today&apos;s targets</h4>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
               Add your high and medium priorities. Habits and routine items appear automatically each morning.
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs relative">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-7 shadow-xs relative">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center mb-4">
               3
             </div>
-            <h4 className="text-lg font-bold text-slate-900">Execute & Track</h4>
+            <h4 className="text-base sm:text-lg font-bold text-slate-900">Execute & Track</h4>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
               Mark tasks off smoothly. Watch completion rates rise and carry over any remaining items without stress.
             </p>
@@ -380,35 +382,35 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 6. Security and Privacy Callout */}
-      <section id="security" className="py-16 bg-blue-50/60 border-y border-blue-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-md shadow-blue-600/20">
-            <Lock className="w-6 h-6" />
+      <section id="security" className="py-12 sm:py-16 bg-blue-50/60 border-y border-blue-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-3 sm:space-y-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-md shadow-blue-600/20">
+            <Lock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Private, Authenticated Cloud Storage
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+          <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto leading-relaxed">
             Every user&apos;s workspace is strictly isolated through Firebase Authentication and security rules. Your tasks, habits, and progress reports can only be viewed and updated by you.
           </p>
         </div>
       </section>
 
       {/* 7. Final Action Callout Banner */}
-      <section className="py-20 px-4 sm:px-6 max-w-5xl mx-auto w-full">
-        <div className="rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-8 sm:p-14 text-center shadow-xl shadow-blue-600/20 space-y-6">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight max-w-2xl mx-auto leading-tight">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 max-w-5xl mx-auto w-full">
+        <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 sm:p-14 text-center shadow-xl shadow-blue-600/20 space-y-4 sm:space-y-6">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight max-w-2xl mx-auto leading-tight">
             Ready to experience effortless daily productivity?
           </h2>
-          <p className="text-blue-100 text-sm sm:text-base max-w-lg mx-auto">
+          <p className="text-blue-100 text-xs sm:text-base max-w-lg mx-auto">
             Create your account now and start scheduling your priorities in the clean White & Blue workspace.
           </p>
           <div className="pt-2">
-            <Link href="/login">
+            <Link href="/login" className="inline-block w-full sm:w-auto">
               <Button
                 variant="secondary"
                 size="lg"
-                className="bg-white text-blue-700 hover:bg-blue-50 font-bold px-8 h-12 rounded-xl text-base shadow-lg"
+                className="w-full sm:w-auto bg-white text-blue-700 hover:bg-blue-50 font-bold px-7 sm:px-8 h-12 rounded-xl text-sm sm:text-base shadow-lg justify-center"
               >
                 <span>Get Started — It&apos;s Free</span>
                 <ArrowRight className="w-4 h-4 ml-2" />

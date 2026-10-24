@@ -154,15 +154,16 @@ export default function DailyPage() {
         title="Daily Tasks"
         subtitle="Review, manage, and complete tasks for any calendar date."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {eligibleCfTasks.length > 0 && (
               <Button
                 variant="secondary"
                 size="md"
                 onClick={() => setCarryForwardOpen(true)}
+                className="flex-1 sm:flex-initial justify-center text-xs sm:text-sm"
               >
-                <Sparkles className="w-4 h-4 text-warning" />
-                <span className="hidden sm:inline">Carry Forward ({eligibleCfTasks.length})</span>
+                <Sparkles className="w-4 h-4 text-warning mr-1" />
+                <span>Carry Forward ({eligibleCfTasks.length})</span>
               </Button>
             )}
             <Button
@@ -172,6 +173,7 @@ export default function DailyPage() {
                 setEditingTask(null);
                 setTaskFormOpen(true);
               }}
+              className="flex-1 sm:flex-initial justify-center"
             >
               <Plus className="w-4 h-4 mr-1" />
               <span>Add Task</span>
@@ -198,7 +200,7 @@ export default function DailyPage() {
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
         <CategoryPill
           name="All Tasks"
           active={selectedCategorySlug === "all"}

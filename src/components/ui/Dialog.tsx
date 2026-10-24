@@ -58,11 +58,11 @@ export const Dialog: React.FC<DialogProps> = ({
       />
 
       <div
-        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface border border-border sm:rounded-xl rounded-t-2xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden z-10 transition-transform`}
+        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-surface border border-border sm:rounded-xl rounded-t-2xl shadow-xl flex flex-col max-h-[88dvh] sm:max-h-[90vh] overflow-hidden z-10 transition-transform`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div>
-            <h2 id="dialog-title" className="text-lg font-semibold text-text-primary">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-border">
+          <div className="min-w-0 pr-2">
+            <h2 id="dialog-title" className="text-base sm:text-lg font-semibold text-text-primary truncate">
               {title}
             </h2>
             {description && (
@@ -72,14 +72,16 @@ export const Dialog: React.FC<DialogProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"
+            className="p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center shrink-0"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:pb-6">
+          {children}
+        </div>
       </div>
     </div>
   );

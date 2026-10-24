@@ -127,16 +127,18 @@ export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
             variant="ghost"
             onClick={handleDecline}
             disabled={processing}
+            className="w-full sm:w-auto"
           >
             Start fresh
           </Button>
 
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto justify-end">
             <Button
               type="button"
               variant="secondary"
               onClick={onClose}
               disabled={processing}
+              className="w-full sm:w-auto"
             >
               Later
             </Button>
@@ -146,6 +148,7 @@ export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
               loading={processing}
               disabled={selectedIds.length === 0}
               onClick={handleAccept}
+              className="w-full sm:w-auto"
             >
               Add {selectedIds.length} to today
             </Button>

@@ -113,15 +113,15 @@ export default function ReportsPage() {
         title="Reports & Analytics"
         subtitle="Historical completion trends and category consistency."
         actions={
-          <div className="flex items-center gap-1.5 bg-surface p-1 rounded-lg border border-border">
+          <div className="flex items-center gap-1 sm:gap-1.5 bg-surface p-1 rounded-lg border border-border w-full sm:w-auto justify-center">
             {([7, 14, 30] as const).map((days) => (
               <button
                 key={days}
                 type="button"
                 onClick={() => setRangeDays(days)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                className={`flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-center ${
                   rangeDays === days
-                    ? "bg-surface-elevated text-accent border border-border"
+                    ? "bg-surface-elevated text-accent border border-border font-bold"
                     : "text-text-secondary hover:text-text-primary"
                 }`}
               >
@@ -134,46 +134,46 @@ export default function ReportsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <div className="p-4 rounded-xl border border-border bg-surface">
+        <div className="p-3.5 sm:p-4 rounded-xl border border-border bg-surface">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
             Eligible Tasks
           </span>
-          <div className="text-2xl font-bold text-text-primary mt-1">{eligibleTotal}</div>
+          <div className="text-xl sm:text-2xl font-bold text-text-primary mt-1">{eligibleTotal}</div>
           <span className="text-[11px] text-text-secondary mt-1 block">Scheduled work</span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border bg-surface">
+        <div className="p-3.5 sm:p-4 rounded-xl border border-border bg-surface">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
             Completed
           </span>
-          <div className="text-2xl font-bold text-accent mt-1">{completedCount}</div>
+          <div className="text-xl sm:text-2xl font-bold text-accent mt-1">{completedCount}</div>
           <span className="text-[11px] text-text-secondary mt-1 block">Finished items</span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border bg-surface">
+        <div className="p-3.5 sm:p-4 rounded-xl border border-border bg-surface">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
             Completion Rate
           </span>
-          <div className="text-2xl font-bold text-text-primary mt-1">
+          <div className="text-xl sm:text-2xl font-bold text-text-primary mt-1">
             {overallRate !== null ? `${overallRate}%` : "—"}
           </div>
-          <span className="text-[11px] text-text-secondary mt-1 block">
+          <span className="text-[11px] text-text-secondary mt-1 block truncate">
             {overallRate !== null ? "Average completion" : "No tasks scheduled"}
           </span>
         </div>
 
-        <div className="p-4 rounded-xl border border-border bg-surface">
+        <div className="p-3.5 sm:p-4 rounded-xl border border-border bg-surface">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider block">
             Cancelled
           </span>
-          <div className="text-2xl font-bold text-danger mt-1">{cancelledCount}</div>
+          <div className="text-xl sm:text-2xl font-bold text-danger mt-1">{cancelledCount}</div>
           <span className="text-[11px] text-text-secondary mt-1 block">Excluded from rate</span>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 min-w-0">
           <div className="mb-2">
             <h3 className="text-sm font-semibold text-text-primary">Completion Share</h3>
             <p className="text-xs text-text-secondary">Completed vs pending tasks</p>
@@ -181,13 +181,13 @@ export default function ReportsPage() {
           <CompletionDonut completed={completedCount} todo={todoCount} cancelled={cancelledCount} />
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 min-w-0">
           <TrendChart data={trendData} />
         </div>
       </div>
 
       {/* Category Performance Breakdown */}
-      <div className="p-5 rounded-xl border border-border bg-surface mb-8">
+      <div className="p-4 sm:p-5 rounded-xl border border-border bg-surface mb-8">
         <h3 className="text-base font-semibold text-text-primary mb-1">
           Category Completion Breakdown
         </h3>
@@ -195,8 +195,8 @@ export default function ReportsPage() {
           Breakdown of recorded tasks by workspace category over the last {rangeDays} days.
         </p>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
+        <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+          <table className="w-full min-w-[380px] text-left text-sm border-collapse">
             <thead>
               <tr className="border-b border-border text-xs text-text-secondary">
                 <th className="pb-3 font-semibold">Category</th>

@@ -258,14 +258,15 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
               <Button
                 type="button"
                 variant={pushSupport?.permission === "granted" ? "secondary" : "primary"}
                 loading={pushEnabling}
                 onClick={handleEnablePush}
+                className="flex-1 sm:flex-initial min-w-[140px] justify-center text-xs sm:text-sm"
               >
-                <Bell className="w-4 h-4 mr-1.5" />
+                <Bell className="w-4 h-4 mr-1.5 shrink-0" />
                 <span>
                   {pushSupport?.permission === "granted" ? "Re-sync Device" : "Enable Push Notifications"}
                 </span>
@@ -277,13 +278,14 @@ export default function SettingsPage() {
                 loading={pushTesting}
                 onClick={handleSendTestPush}
                 disabled={pushSupport?.permission !== "granted"}
+                className="flex-1 sm:flex-initial justify-center text-xs sm:text-sm"
                 title={
                   pushSupport?.permission !== "granted"
                     ? "Enable notifications first to test"
                     : "Send a live push notification"
                 }
               >
-                <BellRing className="w-4 h-4 mr-1.5 text-blue-600" />
+                <BellRing className="w-4 h-4 mr-1.5 text-blue-600 shrink-0" />
                 <span>Test Notification</span>
               </Button>
 
@@ -291,6 +293,7 @@ export default function SettingsPage() {
                 type="button"
                 variant="secondary"
                 onClick={() => setNotificationCenterOpen(true)}
+                className="flex-1 sm:flex-initial justify-center text-xs sm:text-sm"
               >
                 <span>History ({unreadNotifCount})</span>
               </Button>
@@ -300,8 +303,8 @@ export default function SettingsPage() {
           {/* OS-Level Troubleshooting Guide */}
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2 text-xs">
             <span className="font-semibold text-slate-900 block flex items-center gap-1.5">
-              <HelpCircle className="w-4 h-4 text-blue-600" />
-              Device Permission Tips
+              <HelpCircle className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>Device Permission Tips</span>
             </span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-600 pt-1">
               <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1">
@@ -336,7 +339,7 @@ export default function SettingsPage() {
         </div>
 
         {/* 2. Timezone & Quiet Hours */}
-        <form onSubmit={handleSavePreferences} className="p-5 rounded-xl border border-border bg-surface space-y-6">
+        <form onSubmit={handleSavePreferences} className="p-4 sm:p-5 rounded-xl border border-border bg-surface space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2.5">
               <Clock className="w-5 h-5 text-accent" />
@@ -368,14 +371,14 @@ export default function SettingsPage() {
                   }
                   className="w-4 h-4 accent-blue-600 rounded"
                 />
-                <Volume2 className="w-4 h-4 text-blue-600" />
+                <Volume2 className="w-4 h-4 text-blue-600 shrink-0" />
                 <span>Play sound and vibration on alert</span>
               </label>
             </div>
           </div>
 
           {/* Quiet Hours */}
-          <div className="p-4 rounded-lg border border-border bg-surface-elevated/30 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-lg border border-border bg-surface-elevated/30 space-y-3">
             <label className="flex items-center gap-2 text-xs font-semibold text-text-primary cursor-pointer">
               <input
                 type="checkbox"
@@ -395,7 +398,7 @@ export default function SettingsPage() {
               <span>Quiet Hours (Suppress notifications during sleep/focus)</span>
             </label>
 
-            <div className="grid grid-cols-2 gap-3 pl-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-6">
               <Input
                 label="Start Quiet Hours"
                 type="time"
