@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -44,6 +44,26 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setTitle(initialTemplate?.title || "");
+      setDescription(initialTemplate?.description || "");
+      setCategoryId(
+        initialTemplate?.categoryId || categories.find((c) => c.slug === "habits")?.id || categories[0]?.id || ""
+      );
+      setPriority(initialTemplate?.priority || "medium");
+      setRecurrenceType(initialTemplate?.recurrence?.type || "daily");
+      setSelectedWeekdays(initialTemplate?.recurrence?.weekdays || [1, 2, 3, 4, 5]);
+      setStartDate(initialTemplate?.recurrence?.startDate || defaultDate);
+      setDueTime(initialTemplate?.dueTime || "");
+      setHasTarget(Boolean(initialTemplate?.target));
+      setTargetValue(initialTemplate?.target?.value || 8);
+      setTargetUnit(initialTemplate?.target?.unit || "glasses");
+      setError(null);
+      setSubmitting(false);
+    }
+  }, [open, initialTemplate, defaultDate]);
 
   const toggleWeekday = (dayIndex: number) => {
     if (selectedWeekdays.includes(dayIndex)) {
@@ -100,6 +120,11 @@ export const HabitTemplateForm: React.FC<HabitTemplateFormProps> = ({
     try {
       setSubmitting(true);
       await onSubmit(payload);
+      setTitle("");
+      setDescription("");
+      setDueTime("");
+      setHasTarget(false);
+      setError(null);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save template");

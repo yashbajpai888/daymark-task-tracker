@@ -65,11 +65,29 @@ export const TaskForm: React.FC<TaskFormProps> = ({
 
   useEffect(() => {
     if (open) {
+      setTitle(initialTask?.title || "");
+      setDescription(initialTask?.description || "");
+      setDate(initialTask?.date || defaultDate);
+      setPriority(initialTask?.priority || "medium");
+      setCategoryId(
+        initialTask?.categoryId || categories[0]?.id || categories[0]?.slug || ""
+      );
+      setDueTime(initialTask?.dueTime || "");
+      setReminderEnabled(Boolean(initialTask?.reminderEnabled || initialTask?.dueTime));
+      setReminderOffsetMinutes(initialTask?.reminderOffsetMinutes || 0);
+      setHasTarget(Boolean(initialTask?.target));
+      setTargetValue(initialTask?.target?.value || 1);
+      setTargetUnit(initialTask?.target?.unit || "glasses");
+      setSubtasks(initialTask?.subtasks ? [...initialTask.subtasks] : []);
+      setNewSubtaskTitle("");
+      setError(null);
+      setSubmitting(false);
+
       checkPushSupport().then((info) => {
         setPermissionState(info.permission);
       });
     }
-  }, [open]);
+  }, [open, initialTask, defaultDate]);
 
   const handleEnableNotificationsInline = async () => {
     setEnablingNotifications(true);
@@ -147,6 +165,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     try {
       setSubmitting(true);
       await onSubmit(taskPayload);
+      setTitle("");
+      setDescription("");
+      setDueTime("");
+      setReminderEnabled(false);
+      setReminderOffsetMinutes(0);
+      setHasTarget(false);
+      setSubtasks([]);
+      setNewSubtaskTitle("");
+      setError(null);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save task");

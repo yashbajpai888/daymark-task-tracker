@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -29,6 +29,13 @@ export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
     eligibleTasks.map((t) => t.id)
   );
   const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIds(eligibleTasks.map((t) => t.id));
+      setProcessing(false);
+    }
+  }, [open, eligibleTasks]);
 
   const handleToggle = (taskId: string, checked: boolean) => {
     if (checked) {

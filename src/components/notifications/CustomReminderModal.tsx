@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -43,6 +43,21 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setTitle(initialReminder?.title || "");
+      setDescription(initialReminder?.description || "");
+      setCategory(initialReminder?.category || "custom");
+      setReminderTime(initialReminder?.reminderTime || "08:00");
+      setRepeatType(initialReminder?.repeatType || "daily");
+      setSelectedWeekdays(initialReminder?.weekdays || [1, 2, 3, 4, 5]);
+      setIntervalMinutes(initialReminder?.intervalMinutes || 120);
+      setEnabled(initialReminder?.enabled ?? true);
+      setError(null);
+      setSubmitting(false);
+    }
+  }, [open, initialReminder]);
 
   const applyPreset = (preset: (typeof PRESET_REMINDERS)[0]) => {
     setTitle(preset.title);
@@ -98,6 +113,9 @@ export const CustomReminderModal: React.FC<CustomReminderModalProps> = ({
     try {
       setSubmitting(true);
       await onSubmit(payload);
+      setTitle("");
+      setDescription("");
+      setError(null);
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error saving reminder";
