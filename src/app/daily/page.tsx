@@ -107,6 +107,9 @@ export default function DailyPage() {
     try {
       await deleteTask(uid, taskId);
       setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      const prevDate = getPreviousLocalDateString(timeZone, currentDate);
+      const eligible = await getEligiblePendingTasks(uid, prevDate, currentDate);
+      setEligibleCfTasks(eligible);
     } catch (err) {
       console.error("Error deleting task:", err);
     }
@@ -287,6 +290,15 @@ export default function DailyPage() {
           destinationDate={currentDate}
           eligibleTasks={eligibleCfTasks}
           onDecide={handleCarryForwardDecision}
+          onDeleteTask={async (taskId) => {
+            await deleteTask(uid, taskId);
+            const prevDate = getPreviousLocalDateString(timeZone, currentDate);
+            const eligible = await getEligiblePendingTasks(uid, prevDate, currentDate);
+            setEligibleCfTasks(eligible);
+            if (eligible.length === 0) {
+              setCarryForwardOpen(false);
+            }
+          }}
         />
       )}
     </AppShell>

@@ -1,4 +1,4 @@
-import { db, canAccessFirestore } from "@/lib/firebase/client";
+import { db, canAccessFirestore, removeUndefinedFields } from "@/lib/firebase/client";
 import {
   doc,
   getDoc,
@@ -62,11 +62,23 @@ export async function getEligiblePendingTasks(
 ): Promise<TaskItem[]> {
   const sourceTasks = await getTasksForDate(uid, sourceDate);
   const destTasks = await getTasksForDate(uid, destinationDate);
+  const decision = await getCarryForwardDecision(uid, destinationDate);
+
+  // If the user already explicitly declined carry forward for this date, nothing is eligible
+  if (decision && decision.decision === "declined") {
+    return [];
+  }
 
   // Set of source task IDs already carried forward to destinationDate
   const alreadyCarriedSourceIds = new Set(
     destTasks.map((t) => t.sourceTaskId).filter(Boolean)
   );
+
+  // If a decision was already recorded, also consider previously selected/dismissed source task IDs
+  if (decision) {
+    decision.selectedSourceTaskIds?.forEach((id) => alreadyCarriedSourceIds.add(id));
+    decision.dismissedSourceTaskIds?.forEach((id) => alreadyCarriedSourceIds.add(id));
+  }
 
   // Set of template IDs that already exist on destinationDate
   const destTemplateIds = new Set(
@@ -77,7 +89,7 @@ export async function getEligiblePendingTasks(
     // Only incomplete tasks
     if (t.status !== "todo") return false;
 
-    // Do not carry forward if already carried forward to destination date
+    // Do not carry forward if already handled or carried forward to destination date
     if (alreadyCarriedSourceIds.has(t.id)) return false;
 
     // Do not carry forward recurring habit templates if they already generated today
@@ -101,8 +113,9 @@ export async function processCarryForwardDecision(params: {
   const { uid, sourceDate, destinationDate, timeZone, decision, selectedTaskIds } = params;
   let copiedCount = 0;
 
+  const sourceTasks = await getTasksForDate(uid, sourceDate);
+
   if (decision === "accepted" && selectedTaskIds.length > 0) {
-    const sourceTasks = await getTasksForDate(uid, sourceDate);
     const tasksToCopy = sourceTasks.filter((t) => selectedTaskIds.includes(t.id));
 
     for (const sourceTask of tasksToCopy) {
@@ -137,12 +150,18 @@ export async function processCarryForwardDecision(params: {
     }
   }
 
+  const eligibleSourceTasks = sourceTasks.filter((t) => t.status === "todo");
+  const dismissedTaskIds = decision === "accepted"
+    ? eligibleSourceTasks.map((t) => t.id).filter((id) => !selectedTaskIds.includes(id))
+    : eligibleSourceTasks.map((t) => t.id);
+
   // Record the decision so the prompt is not shown again for this destinationDate
   const decisionRecord: CarryForwardDecision = {
     destinationDate,
     sourceDate,
     decision,
     selectedSourceTaskIds: decision === "accepted" ? selectedTaskIds : [],
+    dismissedSourceTaskIds: dismissedTaskIds,
     createdAt: Date.now(),
   };
 
@@ -153,8 +172,9 @@ export async function processCarryForwardDecision(params: {
   } else {
     try {
       const docRef = doc(db, "users", uid, "carryForwardDecisions", destinationDate);
+      const cleanRecord = removeUndefinedFields(decisionRecord);
       await setDoc(docRef, {
-        ...decisionRecord,
+        ...cleanRecord,
         createdAt: serverTimestamp(),
       });
     } catch (err) {

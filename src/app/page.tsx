@@ -141,6 +141,8 @@ export default function HomePage() {
     await deleteTask(uid, taskId);
     const updated = await getTasksForDate(uid, todayStr);
     setTasks(updated);
+    const eligible = await getEligiblePendingTasks(uid, yesterdayStr, todayStr);
+    setEligibleCfTasks(eligible);
   };
 
   const handleCreateOrUpdateTask = async (taskData: {
@@ -533,6 +535,14 @@ export default function HomePage() {
           destinationDate={todayStr}
           eligibleTasks={eligibleCfTasks}
           onDecide={handleCarryForwardDecision}
+          onDeleteTask={async (taskId) => {
+            await deleteTask(uid, taskId);
+            const eligible = await getEligiblePendingTasks(uid, yesterdayStr, todayStr);
+            setEligibleCfTasks(eligible);
+            if (eligible.length === 0) {
+              setCarryForwardOpen(false);
+            }
+          }}
         />
       )}
     </AppShell>

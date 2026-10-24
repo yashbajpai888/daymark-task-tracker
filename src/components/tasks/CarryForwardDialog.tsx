@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { TaskItem } from "@/types";
 import { formatDisplayDate } from "@/lib/dates";
 import { PriorityBadge } from "@/components/ui/Badge";
+import { Trash2 } from "lucide-react";
 
 interface CarryForwardDialogProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface CarryForwardDialogProps {
   destinationDate?: string;
   eligibleTasks: TaskItem[];
   onDecide: (decision: "accepted" | "declined", selectedTaskIds: string[]) => Promise<void>;
+  onDeleteTask?: (taskId: string) => Promise<void>;
 }
 
 export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
@@ -24,18 +26,35 @@ export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
   destinationDate: _destinationDate,
   eligibleTasks,
   onDecide,
+  onDeleteTask,
 }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
     eligibleTasks.map((t) => t.id)
   );
   const [processing, setProcessing] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setSelectedIds(eligibleTasks.map((t) => t.id));
       setProcessing(false);
+      setDeletingId(null);
     }
   }, [open, eligibleTasks]);
+
+  const handleDeleteItem = async (e: React.MouseEvent, taskId: string) => {
+    e.stopPropagation();
+    if (!onDeleteTask) return;
+    try {
+      setDeletingId(taskId);
+      await onDeleteTask(taskId);
+      setSelectedIds((prev) => prev.filter((id) => id !== taskId));
+    } catch (err) {
+      console.error("Failed to delete task from carry forward dialog:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleToggle = (taskId: string, checked: boolean) => {
     if (checked) {
@@ -122,7 +141,21 @@ export const CarryForwardDialog: React.FC<CarryForwardDialogProps> = ({
                     )}
                   </div>
                 </div>
-                <PriorityBadge priority={task.priority} />
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                  <PriorityBadge priority={task.priority} />
+                  {onDeleteTask && (
+                    <button
+                      type="button"
+                      title="Delete task"
+                      disabled={deletingId === task.id || processing}
+                      onClick={(e) => handleDeleteItem(e, task.id)}
+                      className="p-1.5 rounded-lg text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors cursor-pointer disabled:opacity-50"
+                      aria-label={`Delete task ${task.title}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-danger" />
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

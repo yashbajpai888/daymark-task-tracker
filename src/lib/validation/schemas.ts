@@ -101,6 +101,7 @@ export const carryForwardSchema = z.object({
   sourceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   decision: z.enum(["accepted", "declined"]),
   selectedSourceTaskIds: z.array(z.string()),
+  dismissedSourceTaskIds: z.array(z.string()).optional(),
 });
 
 export const categorySchema = z.object({

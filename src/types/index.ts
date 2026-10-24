@@ -98,6 +98,7 @@ export interface CarryForwardDecision {
   sourceDate: string;
   decision: "accepted" | "declined";
   selectedSourceTaskIds: string[];
+  dismissedSourceTaskIds?: string[];
   createdAt: number | string;
 }
 
